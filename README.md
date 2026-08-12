@@ -47,6 +47,10 @@ Deliberately *not* a 6-month prerequisites-first curriculum. Each step is runnab
 4. **Extend the existing ABMs** — cross the two lines: what happens if `model_a_group_competition.py`'s groups also have to maintain an internal "body budget," or if strategy selection follows an FBT-style fitness-over-truth rule instead of a fixed niche-optimum?
 5. **Original model** — once 1–3 are running and understood, define a specific question neither Hoffman nor Barrett modeled directly and build for it.
 
+### Deeper dive
+
+- [From metabolic state to labeled emotion to action — reading notes](docs/interoception-to-emotion-pipeline.md) — SE vs. interoceptive exposure/biofeedback (evidence-base compared), the affect-labeling-as-regulation mechanism, whether "naming an emotion is like co-regulation" holds up, and a proposed four-stage pipeline (interoception → affect → concept → action) that doubles as a spec for the toy active-inference model below. **AI-synthesized reading notes, not a verified literature review** — read the disclaimer at the top before citing anything in it.
+
 ### Bibliography
 
 **Books**
