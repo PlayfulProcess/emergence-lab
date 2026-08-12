@@ -143,6 +143,70 @@ concept-learning step parameterized as *updatable via social feedback*
 — i.e., co-regulation as the training signal for the concept layer,
 not just a metaphor for it.
 
+## 5. Two popular frameworks tested against this pipeline
+
+### Plutchik's Wheel of Emotions — weak as theory, decent as a vocabulary ladder
+
+Plutchik's wheel (1980) is a **basic-emotion** model: 8 discrete,
+biologically primary categories (joy, trust, fear, surprise, sadness,
+anticipation, anger, disgust), arranged as polar opposites, combining
+like colors into "dyads" (joy + trust = love). That architecture is
+exactly what Barrett's research program was built to test against — and
+it doesn't hold up well:
+
+- Barrett, Adolphs, Marsella, Martinez & Pollak's 2019 meta-analysis
+  found no reliable, specific facial or physiological "fingerprint" for
+  discrete emotion categories across studies — the same labeled emotion
+  shows highly variable expression depending on context and culture.
+  That directly undercuts the premise that these 8 are stable evolved
+  primitives you can combine like paint.
+  - [Barrett, Adolphs, Marsella, Martinez & Pollak (2019) — Emotional Expressions Reconsidered](https://journals.sagepub.com/doi/full/10.1177/1529100619832930?journalCode=psia)
+- Independent critics separately note the wheel's own geometry (why
+  these opposites, why these dyads) has no empirical support of its
+  own — it's a tidy diagram, not a measured finding.
+
+**Where it still earns its keep:** purely as a vocabulary scaffold.
+Walking someone from "bad" toward a more specific derived term is the
+same granularity mechanism that *does* have support (§4). This is why
+the popular "Feelings Wheel" (Gloria Willcox, 1982 — often conflated
+with Plutchik's, but a separate, simpler therapy tool) has more staying
+power in clinical practice: it keeps the "walk outward to more specific
+words" function and drops Plutchik's evolutionary/combinatorial claims.
+**Use it as a ladder, not an anatomy chart.**
+
+### NVC — a closer structural fit, for one specific reason
+
+Nonviolent Communication's feeling → need chain (a feeling signals a
+met or unmet need — safety, connection, autonomy, rest) maps onto the
+pipeline in §4 better than Plutchik does: **needs sit close to the
+universal, allostatic layer** (a body-budget deficit is a body-budget
+deficit regardless of culture); **the feeling word sits at the
+culturally-learned concept layer** on top of it. NVC arrived at
+roughly the same universal-substrate/constructed-label split Barrett
+argues for, just from clinical practice instead of neuroscience. Its
+request step ("I feel X because I need Y, could you Z") also closes the
+action loop *interpersonally* — an actual solicitation for co-regulation
+from another nervous system, not just self-directed labeling.
+
+- [NVC feelings and needs lists](https://nonviolentcommunication.com/learn-nonviolent-communication/feelings/)
+
+Where it strains against the framework: NVC draws a hard line between
+real "feelings" (sad, scared, frustrated) and "pseudo-feelings"
+(abandoned, disrespected, misled) — the latter treated as judgments in
+disguise, not real feelings. Barrett's theory doesn't support that
+clean a cut: there's no non-conceptual "pure" feeling underneath the
+judgment to strip back to — "disrespected" is just a more
+socially-elaborated concept than "sad," not a different kind of thing.
+NVC's practical instinct (steer people toward words that don't encode
+blame) is clinically reasonable; the claim that this reveals a *truer*
+feeling underneath is a stronger metaphysical move than the
+constructionist evidence backs.
+
+**Net:** NVC is the better-fitting practical framework of the two — its
+need-layer and request-step both land on real structure in the §4
+pipeline. Plutchik is fine as a training-wheels vocabulary tool, weak
+as an explanation of what's actually happening.
+
 ## Further reading
 
 - Barrett — *How Emotions Are Made* (already in the main bibliography)
@@ -152,3 +216,5 @@ not just a metaphor for it.
   internalized-speech-as-self-regulation argument
 - Siegel & Bryson — *The Whole-Brain Child* (2011) — popular-science
   version of the affect-labeling mechanism, "name it to tame it"
+- Rosenberg — *Nonviolent Communication: A Language of Life* (2003)
+- Plutchik — *A General Psychoevolutionary Theory of Emotion* (1980)
