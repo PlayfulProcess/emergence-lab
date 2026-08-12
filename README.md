@@ -49,7 +49,10 @@ Deliberately *not* a 6-month prerequisites-first curriculum. Each step is runnab
 
 ### Deeper dive
 
-- [From metabolic state to labeled emotion to action — reading notes](docs/interoception-to-emotion-pipeline.md) — SE vs. interoceptive exposure/biofeedback (evidence-base compared), the affect-labeling-as-regulation mechanism, whether "naming an emotion is like co-regulation" holds up, and a proposed four-stage pipeline (interoception → affect → concept → action) that doubles as a spec for the toy active-inference model below. **AI-synthesized reading notes, not a verified literature review** — read the disclaimer at the top before citing anything in it.
+- [From metabolic state to labeled emotion to action — reading notes](docs/interoception-to-emotion-pipeline.md) — SE vs. interoceptive exposure/biofeedback (evidence-base compared), the affect-labeling-as-regulation mechanism, whether "naming an emotion is like co-regulation" holds up, and a proposed four-stage pipeline (interoception → affect → concept → action) that doubles as a spec for the toy active-inference model below.
+- [Does it last, and what else actually works? — reading notes](docs/evidence-based-practices.md) — whether MBSR's benefits require lifelong practice (they mostly don't, per follow-up data), plus an evidence-ranked audit of exercise, journaling, gratitude practice, sleep, and social connection as self-improvement practices.
+
+**Both docs above are AI-synthesized reading notes, not verified literature reviews** — read the disclaimer at the top of each before citing anything in them.
 
 ### Bibliography
 
