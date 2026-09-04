@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Overflow Lab</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,300&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --paper:#eef1ec; --sheet:#fafcf8; --ink:#1a1f1b; --muted:#5d6a61; --faint:#8a958c;
+    --rule:#cdd6cd; --rule-soft:#dee5dd; --accent:#1f6f5c; --accent-soft:#dcebe4;
+    --over:#1f6f5c; --hoard:#b8860b; --duty:#9c3b2e; --recip:#3a6ea5; --withdrawn:#8a958c; --free:#6b4c8a;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#101410; --sheet:#171d18; --ink:#e5ebe3; --muted:#9aa79d; --faint:#6f7d73;
+      --rule:#2b342d; --rule-soft:#222b24; --accent:#5cc6a6; --accent-soft:#16302a;
+      --over:#5cc6a6; --hoard:#d9a441; --duty:#d9705d; --recip:#6f9fd8; --withdrawn:#6f7d73; --free:#a888c9;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#101410; --sheet:#171d18; --ink:#e5ebe3; --muted:#9aa79d; --faint:#6f7d73;
+    --rule:#2b342d; --rule-soft:#222b24; --accent:#5cc6a6; --accent-soft:#16302a;
+    --over:#5cc6a6; --hoard:#d9a441; --duty:#d9705d; --recip:#6f9fd8; --withdrawn:#6f7d73; --free:#a888c9;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--paper);color:var(--ink);margin:0;
+    font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,sans-serif;font-size:15px;line-height:1.55}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 20px 70px}
+  header{padding:48px 0 22px;border-bottom:2px solid var(--ink);display:flex;flex-direction:column;gap:12px}
+  .eyebrow{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--accent);margin:0}
+  h1{font-family:Newsreader,Georgia,serif;font-weight:400;font-size:clamp(32px,6vw,54px);
+    line-height:1.04;letter-spacing:-.02em;margin:0}
+  .deck{font-family:Newsreader,Georgia,serif;font-size:18px;font-style:italic;font-weight:300;
+    color:var(--muted);margin:0;max-width:62ch}
+  h2{font-family:Newsreader,Georgia,serif;font-weight:400;font-size:26px;margin:38px 0 10px}
+  p{max-width:68ch}
+
+  .lab{display:grid;grid-template-columns:minmax(0,1fr) 292px;gap:20px;margin-top:26px;align-items:start}
+  @media (max-width:900px){.lab{grid-template-columns:1fr}}
+
+  .stage{background:var(--sheet);border:1px solid var(--rule);padding:14px;min-width:0}
+  canvas{display:block;width:100%;height:auto;background:transparent;image-rendering:auto}
+  .plots{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:12px}
+  @media (max-width:700px){.plots{grid-template-columns:1fr}}
+  .plot{border:1px solid var(--rule-soft);padding:8px 8px 4px}
+  .plot h3{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.11em;
+    text-transform:uppercase;color:var(--accent);margin:0 0 6px;font-weight:500}
+  .plot .val{font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--muted);
+    font-variant-numeric:tabular-nums;margin-bottom:4px}
+
+  .panel{background:var(--sheet);border:1px solid var(--rule);padding:16px 16px 20px;
+    position:sticky;top:14px;max-height:calc(100vh - 28px);overflow-y:auto}
+  .panel h3{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--accent);margin:16px 0 8px;font-weight:500}
+  .panel h3:first-child{margin-top:0}
+  .ctl{margin-bottom:12px}
+  .ctl label{display:flex;justify-content:space-between;align-items:baseline;
+    font-size:12.5px;color:var(--muted);margin-bottom:3px;gap:8px}
+  .ctl label b{font-family:"IBM Plex Mono",monospace;color:var(--ink);font-weight:500;
+    font-variant-numeric:tabular-nums}
+  input[type=range]{width:100%;accent-color:var(--accent);margin:0}
+  .btns{display:flex;flex-wrap:wrap;gap:7px;margin-top:6px}
+  button{font-family:"IBM Plex Sans",sans-serif;font-size:13px;padding:7px 13px;cursor:pointer;
+    border:1px solid var(--rule);background:var(--paper);color:var(--ink);border-radius:3px}
+  button:hover{border-color:var(--accent)}
+  button.primary{background:var(--accent);color:var(--paper);border-color:var(--accent);font-weight:500}
+  button.warn{border-color:var(--duty);color:var(--duty)}
+  button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+  table.stats{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:4px}
+  table.stats td{padding:3px 0;border-bottom:1px solid var(--rule-soft)}
+  table.stats td:last-child{text-align:right;font-family:"IBM Plex Mono",monospace;
+    font-variant-numeric:tabular-nums}
+  table.stats tr:last-child td{border-bottom:none}
+  .sw{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;vertical-align:-1px}
+
+  .matrix{display:grid;grid-template-columns:auto 1fr 1fr;gap:1px;background:var(--rule);
+    border:1px solid var(--rule);margin-top:18px;font-size:13.5px}
+  .matrix > div{background:var(--sheet);padding:13px 14px}
+  .matrix .hd{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--accent);display:flex;align-items:center}
+  .matrix .q b{display:block;font-family:Newsreader,Georgia,serif;font-size:19px;
+    font-weight:400;margin-bottom:4px}
+  .matrix .q span{color:var(--muted);font-size:13px}
+  .note{font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--muted);
+    background:var(--rule-soft);padding:11px 13px;margin-top:16px;max-width:70ch;line-height:1.55}
+  ul.h{padding-left:20px;max-width:68ch}
+  ul.h li{margin-bottom:7px}
+  footer{margin-top:52px;padding-top:18px;border-top:1px solid var(--rule);
+    font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--faint);
+    display:flex;flex-wrap:wrap;gap:8px 20px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <p class="eyebrow">Chapter 17 · sprint 1 · runs in this page</p>
+  <h1>The Overflow Lab</h1>
+  <p class="deck">Four parts of us, two goods — one rival, one not — and three measures that are allowed to disagree. Move the sliders until the thesis fails.</p>
+</header>
+
+<div class="lab">
+  <div class="stage">
+    <canvas id="world" width="1360" height="700"></canvas>
+    <div class="plots">
+      <div class="plot"><h3>Population by part</h3><div class="val" id="vPop">—</div><canvas id="pPop" width="600" height="200"></canvas></div>
+      <div class="plot"><h3>Gini (spread)</h3><div class="val" id="vGini">—</div><canvas id="pGini" width="600" height="200"></canvas></div>
+      <div class="plot"><h3>Median energy · floor</h3><div class="val" id="vMed">—</div><canvas id="pMed" width="600" height="200"></canvas></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Run</h3>
+    <div class="btns">
+      <button class="primary" id="bPlay">Pause</button>
+      <button id="bStep">Step</button>
+      <button id="bReset">Reset</button>
+      <button class="warn" id="bShock">Shock</button>
+    </div>
+    <div class="ctl" style="margin-top:12px">
+      <label>Tick <b id="vTick">0</b></label>
+    </div>
+
+    <h3>The dial that matters</h3>
+    <div class="ctl">
+      <label>Non-rival share of production <b id="lNon">50%</b></label>
+      <input type="range" id="sNon" min="0" max="100" value="50">
+    </div>
+
+    <h3>What counts as success</h3>
+    <div class="ctl">
+      <div class="btns">
+        <button id="bSigWhole" class="primary">The whole</button>
+        <button id="bSigEnergy">Accumulation</button>
+      </div>
+      <div class="note" style="margin-top:8px;font-size:11.5px;padding:8px 10px">Parts spread by imitation. This is the signal people imitate on.</div>
+    </div>
+
+    <h3>Starting mix</h3>
+    <div class="ctl"><label>Overflower <b id="lOver">30%</b></label><input type="range" id="sOver" min="0" max="80" value="30"></div>
+    <div class="ctl"><label>Hoarder <b id="lHoard">20%</b></label><input type="range" id="sHoard" min="0" max="80" value="20"></div>
+    <div class="ctl"><label>Duty-giver <b id="lDuty">20%</b></label><input type="range" id="sDuty" min="0" max="80" value="20"></div>
+    <div class="ctl"><label>Reciprocator <b id="lRecip">20%</b></label><input type="range" id="sRecip" min="0" max="80" value="20"></div>
+    <div class="ctl"><label>Free-rider <b id="lFree">10%</b></label><input type="range" id="sFree" min="0" max="60" value="10"></div>
+    <div class="note" style="margin-top:4px;font-size:11.5px;padding:8px 10px">Withdrawn fills whatever is left over. Changes apply on Reset.</div>
+
+    <h3>Standing</h3>
+    <table class="stats" id="tbl"></table>
+  </div>
+</div>
+
+<h2>The four parts, and why they are not strategies</h2>
+<p>These are not four kinds of person. They are four parts every person has, in different proportions, in different weeks. The agents here are pure types only because a model needs handles — the interesting version is the mix inside one life.</p>
+
+<div class="matrix">
+  <div class="hd"></div>
+  <div class="hd">Low attunement to the other</div>
+  <div class="hd">High attunement to the other</div>
+  <div class="hd">High attunement<br>to own reserves</div>
+  <div class="q"><b style="color:var(--hoard)">The Hoarder</b><span>"Not enough yet." Tracks the vessel obsessively, never pours. Security that never arrives.</span></div>
+  <div class="q"><b style="color:var(--over)">The Overflower</b><span>Tracks both. Pours from genuine surplus. The only quadrant that is sustainable.</span></div>
+  <div class="hd">Low attunement<br>to own reserves</div>
+  <div class="q"><b style="color:var(--withdrawn)">The Withdrawn</b><span>Neither fills nor gives. Numb to both signals. The quadrant nobody models and everybody has visited.</span></div>
+  <div class="q"><b style="color:var(--duty)">The Duty-giver</b><span>The other's need is the only signal. Pours from an empty vessel. Flowing from guilt.</span></div>
+</div>
+
+<p style="margin-top:18px"><strong style="color:var(--recip)">The Reciprocator is not a quadrant — it is the scaffolding.</strong> Keeping a ledger is what you do while trust is still being established. Reciprocity is what overflow looks like before anyone trusts anyone; overflow is what reciprocity becomes when the ledger stops being necessary. It is in the model because the literature says it should win, and overflow needs a real opponent rather than a straw one.</p>
+
+<h2>Sprint 1 log — what broke, and the one thing that held</h2>
+<div class="note" style="border-left:3px solid var(--duty);background:var(--sheet);padding:16px 18px">
+<strong style="color:var(--duty)">STATUS: NOT CONVERGED.</strong> Do not draw conclusions from this build.
+Three calibration attempts each produced an artefact of the rules rather than a finding. That is what
+sprint 1 is for, and the failures are more useful than the numbers.
+</div>
+
+<h3 style="font-family:Newsreader,Georgia,serif;font-size:20px;font-weight:400;margin:26px 0 8px">The three failures</h3>
+<ul class="h">
+  <li><strong>Build 1 — the world was too generous.</strong> Baseline production exceeded metabolism, so
+  nobody died and everyone hit the energy ceiling. No scarcity means giving buys nothing and hoarding
+  costs nothing, so no strategy could be distinguished from any other. <em>A model without scarcity
+  cannot say anything about overflow.</em></li>
+  <li><strong>Build 2 — the reproduction rule decided the outcome.</strong> Agents reproduced on
+  accumulated energy. Overflowers give away everything above their threshold, so they could
+  <em>never</em> reach it. <strong>Overflow was structurally forbidden from propagating.</strong> The
+  result looked like a finding about overflow; it was a finding about my rule. Replaced with cultural
+  imitation — which is what the book is actually about, since it argues about orientations people
+  pick, not genes.</li>
+  <li><strong>Build 3 — the wider success signal was a constant.</strong> "How is the whole doing" was
+  computed as a global average, identical for every agent, so it could not discriminate between them
+  and both signals collapsed into "who has the most." Now measured over each candidate's own
+  neighbourhood. And without an exploration term the imitation dynamic drifts to fixation, so a single
+  run reports noise — mutation added, but replication with a seeded generator is still missing.</li>
+</ul>
+
+<h3 style="font-family:Newsreader,Georgia,serif;font-size:20px;font-weight:400;margin:26px 0 8px">The one result that survived every build</h3>
+<p><strong>Duty-givers go extinct in every condition tested</strong> — all values of non-rival share, both
+success signals, every starting mix, in all three builds. They give on schedule regardless of their
+own state, and under a rationed commons that is fatal. Hoarders survive them; so does everyone else.</p>
+<p style="font-family:Newsreader,Georgia,serif;font-style:italic;font-size:19px;border-left:2px solid var(--accent);padding-left:18px;max-width:56ch">
+A gift given from depletion costs more than it delivers.</p>
+<p>That is H3 from the design document, and it is the prediction that most directly concerns a reader's
+actual life. It is also the least surprising, which is worth saying out loud.</p>
+
+<h3 style="font-family:Newsreader,Georgia,serif;font-size:20px;font-weight:400;margin:26px 0 8px">What sprint 2 needs</h3>
+<ul class="h">
+  <li>A <strong>seeded random generator</strong> and results averaged over many runs. Single runs of an
+  imitation model are noise, and reporting one is how you fool yourself.</li>
+  <li><strong>Weaker imitation relative to selection</strong>, so composition tracks survival rather than
+  drifting to whoever got lucky first.</li>
+  <li><strong>A larger population.</strong> 260 agents is small enough that drift outruns selection.</li>
+  <li>Then, and only then, the <strong>non-rival crossover</strong> and the <strong>density threshold</strong>
+  — the two numbers the chapter actually wants.</li>
+</ul>
+
+<div class="note">The three measures are reported side by side and are allowed to disagree. There is no
+welfare score. A lab that flattened its own output to one axis would be arguing against the book it
+belongs to — and a lab tuned until it agreed with that book would be worth even less.</div>
+
+<footer>
+  <span>book-repo/books/what-survives-the-number/LAB-DESIGN.md</span>
+  <span>sprint 1 of 5</span>
+  <span>CC BY-SA 4.0</span>
+</footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+var PARTS=[
+  {k:"over",  name:"Overflower",  css:"--over"},
+  {k:"hoard", name:"Hoarder",     css:"--hoard"},
+  {k:"duty",  name:"Duty-giver",  css:"--duty"},
+  {k:"recip", name:"Reciprocator",css:"--recip"},
+  {k:"with",  name:"Withdrawn",   css:"--withdrawn"},
+  {k:"free",  name:"Free-rider",  css:"--free"}
+];
+function col(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim()||"#888";}
+
+var W=document.getElementById("world"), wctx=W.getContext("2d");
+var N0=260, T=30, BUF=12, BASE=8.9, METAB=8.62, MAXE=120, CAP=600;
+var agents=[], tick=0, running=true, shockUntil=-1;
+var POOLMAX=2600, pool=POOLMAX, REGEN=0.075;   // a shared, finite, regenerating commons
+var hist={pop:[],gini:[],med:[],floor:[]};
+var nonRival=0.5, signal="whole";
+
+function rnd(a,b){return a+Math.random()*(b-a);}
+// What does this world treat as visible success? The flattened answer is "how much you have."
+function score(a){
+  if(signal==="energy") return a.e;                      // one axis: how much you have
+  // the wider signal: how is the neighbourhood around THIS agent doing?
+  var around=0,n=0;
+  for(var i=0;i<6;i++){
+    var b=pick(agents);
+    if(b&&b.alive&&b!==a){ around+=Math.min(b.e,90)+(b.tech-1)*70; n++; }
+  }
+  var ctx = n? around/n : 45;
+  return Math.min(a.e,90)*0.30 + (a.tech-1)*70*0.30 + ctx*0.85;
+}
+function pick(a){return a[(Math.random()*a.length)|0];}
+
+function mix(){
+  var o=+document.getElementById("sOver").value,
+      h=+document.getElementById("sHoard").value,
+      d=+document.getElementById("sDuty").value,
+      r=+document.getElementById("sRecip").value,
+      f=+document.getElementById("sFree").value;
+  var used=o+h+d+r+f, w=Math.max(0,100-used);
+  return {over:o,hoard:h,duty:d,recip:r,free:f,with:w};
+}
+
+function build(){
+  var m=mix(), bag=[];
+  for(var k in m){ var n=Math.round(N0*m[k]/100); for(var i=0;i<n;i++) bag.push(k); }
+  while(bag.length<N0) bag.push("with");
+  agents=[];
+  for(var j=0;j<bag.length;j++){
+    agents.push({part:bag[j],e:rnd(45,75),tech:rnd(0.9,1.1),alive:true,
+      x:rnd(0.04,0.96),y:rnd(0.05,0.95),got:0,gave:0,age:0});
+  }
+  tick=0; shockUntil=-1; pool=POOLMAX; hist={pop:[],gini:[],med:[],floor:[]};
+}
+
+function neighbours(a,n){
+  var out=[];
+  for(var i=0;i<n;i++){
+    var b=pick(agents);
+    if(b&&b.alive&&b!==a) out.push(b);
+  }
+  return out;
+}
+
+function step(){
+  var shocked = tick<shockUntil;
+  var base = BASE*(shocked?0.40:1);
+  var live=[], i, a;
+
+  // 1. each agent's DEMAND on the commons
+  var demand=[], total=0;
+  for(i=0;i<agents.length;i++){
+    a=agents[i]; if(!a.alive) continue;
+    var d=BASE*(tick<shockUntil?0.40:1)*rnd(0.55,1.45);
+    if(a.part==="with") d*=0.82;                      // does not maintain the vessel
+    if(a.part==="hoard"||a.part==="free") d*=1.25;    // takes more when it can
+    demand.push(d); total+=d; live.push(a); a.age++;
+  }
+  // 2. ration the commons proportionally when demand exceeds what is there
+  var avail=Math.min(pool,total), ration = total>0 ? avail/total : 0;
+  pool -= avail;
+  for(i=0;i<live.length;i++){
+    a=live[i];
+    var eff=(1-nonRival)+nonRival*a.tech;             // technique makes the same draw go further
+    a.e += demand[i]*ration*eff - METAB;
+    if(a.e>MAXE) a.e=MAXE;
+  }
+  // 3. the commons regrows logistically
+  pool += REGEN*pool*(1-pool/POOLMAX) + 5;
+  if(pool>POOLMAX) pool=POOLMAX;
+  if(pool<1) pool=1;
+
+  // giving phase
+  for(i=0;i<live.length;i++){
+    a=live[i];
+    var ns=neighbours(a,3); if(!ns.length) continue;
+    var give=0, shareTech=false;
+
+    if(a.part==="over"){
+      var surplus=a.e-(T+BUF);
+      if(surplus>0){ give=surplus*0.55; shareTech=true; }
+    } else if(a.part==="duty"){
+      give=Math.min(a.e*0.22, 7);            // gives regardless of own state
+      shareTech=true;
+    } else if(a.part==="recip"){
+      if(a.got>0 && a.e>T){ give=Math.min(a.e-T,6); shareTech=true; a.got*=0.5; }
+    }
+    // hoarder, withdrawn, free-rider give nothing
+
+    if(give>0){
+      var per=give/ns.length;
+      a.e-=give; a.gave+=give;
+      for(var q=0;q<ns.length;q++){ ns[q].e+=per; ns[q].got+=per; }
+    }
+    if(shareTech){                            // non-rival: costs the giver nothing
+      for(var z=0;z<ns.length;z++){
+        var r=ns[z];
+        if(a.tech>r.tech) r.tech += (a.tech-r.tech)*0.16;
+      }
+    }
+  }
+
+  // learning, decay, death, reproduction
+  for(i=0;i<live.length;i++){
+    a=live[i];
+    a.tech += 0.0011;                          // slow own learning
+    a.tech -= (a.tech-1)*0.004;                // forgetting pulls toward baseline
+    if(a.e<=0){ a.alive=false; continue; }
+  }
+
+  // CULTURAL propagation: parts spread by imitation, not by accumulation.
+  // What counts as "visible success" is the parameter that matters.
+  if(tick%6===0){
+    var alive2=agents.filter(function(x){return x.alive;});
+    for(i=0;i<alive2.length;i++){
+      if(Math.random()>0.09) continue;
+      a=alive2[i];
+      var look=neighbours(a,3); if(!look.length) continue;
+      var best=a, bs=score(a);
+      for(var q2=0;q2<look.length;q2++){ var s2=score(look[q2]); if(s2>bs){bs=s2;best=look[q2];} }
+      if(best!==a && bs>score(a)*1.08) a.part=best.part;
+      // exploration: without it the population drifts to fixation and the run is noise
+      if(Math.random()<0.012) a.part=pick(["over","hoard","duty","recip","with","free"]);
+    }
+  }
+  // replacement births keep the population near N0; composition follows imitation
+  var nAlive=agents.filter(function(x){return x.alive;}).length;
+  while(nAlive<N0 && nAlive>0){
+    var par=pick(agents.filter(function(x){return x.alive;}));
+    agents.push({part:par.part,e:rnd(38,58),tech:1+(par.tech-1)*0.6,alive:true,
+      x:rnd(0.04,0.96),y:rnd(0.05,0.95),got:0,gave:0,age:0});
+    nAlive++;
+  }
+  agents=agents.filter(function(x){return x.alive;});
+  tick++;
+  record();
+}
+
+function counts(){
+  var c={}; PARTS.forEach(function(p){c[p.k]=0;});
+  agents.forEach(function(a){ if(a.alive) c[a.part]++; });
+  return c;
+}
+function gini(v){
+  if(v.length<2) return 0;
+  var s=v.slice().sort(function(x,y){return x-y;}), n=s.length, sum=0, cum=0;
+  for(var i=0;i<n;i++){ sum+=s[i]; cum+=(i+1)*s[i]; }
+  if(sum<=0) return 0;
+  return (2*cum)/(n*sum) - (n+1)/n;
+}
+function record(){
+  var es=[]; agents.forEach(function(a){ if(a.alive) es.push(a.e); });
+  es.sort(function(a,b){return a-b;});
+  var med = es.length? es[(es.length/2)|0] : 0;
+  var flr = es.length? es[Math.max(0,((es.length*0.1)|0))] : 0;
+  hist.pop.push(counts()); hist.gini.push(gini(es));
+  hist.med.push(med); hist.floor.push(flr);
+  if(hist.pop.length>420){hist.pop.shift();hist.gini.shift();hist.med.shift();hist.floor.shift();}
+}
+
+function draw(){
+  var w=W.width,h=W.height;
+  wctx.clearRect(0,0,w,h);
+  wctx.fillStyle=col("--sheet"); wctx.fillRect(0,0,w,h);
+  if(tick<shockUntil){
+    wctx.fillStyle=col("--duty"); wctx.globalAlpha=.07; wctx.fillRect(0,0,w,h); wctx.globalAlpha=1;
+    wctx.fillStyle=col("--duty");
+    wctx.font="600 22px 'IBM Plex Mono', monospace";
+    wctx.fillText("SHOCK", 22, 38);
+  }
+  {
+    wctx.fillStyle=col("--muted");
+    wctx.font="500 15px 'IBM Plex Mono', monospace";
+    wctx.fillText("commons "+Math.round(pool)+" / "+POOLMAX, 22, h-20);
+  }
+  for(var i=0;i<agents.length;i++){
+    var a=agents[i]; if(!a.alive) continue;
+    var r=3.0+Math.min(7,a.e/13);
+    wctx.beginPath();
+    wctx.arc(a.x*w, a.y*h, r, 0, 6.2832);
+    wctx.fillStyle=col("--"+ (a.part==="with"?"withdrawn":a.part));
+    wctx.globalAlpha=a.e<T?0.32:0.88;
+    wctx.fill();
+    wctx.globalAlpha=1;
+    if(a.tech>1.25){
+      wctx.strokeStyle=col("--accent"); wctx.lineWidth=1.1;
+      wctx.globalAlpha=Math.min(.85,(a.tech-1.25)*1.6);
+      wctx.beginPath(); wctx.arc(a.x*w,a.y*h,r+3.2,0,6.2832); wctx.stroke();
+      wctx.globalAlpha=1;
+    }
+  }
+}
+
+function line(cv,series,colr,maxv){
+  var c=cv.getContext("2d"), w=cv.width, h=cv.height;
+  var n=series.length; if(n<2) return;
+  c.strokeStyle=colr; c.lineWidth=2.4; c.beginPath();
+  for(var i=0;i<n;i++){
+    var x=(i/(n-1))*w, y=h-(Math.min(series[i],maxv)/maxv)*(h-8)-4;
+    if(i===0) c.moveTo(x,y); else c.lineTo(x,y);
+  }
+  c.stroke();
+}
+function drawPlots(){
+  var pp=document.getElementById("pPop"), pg=document.getElementById("pGini"), pm=document.getElementById("pMed");
+  [pp,pg,pm].forEach(function(cv){
+    var c=cv.getContext("2d"); c.clearRect(0,0,cv.width,cv.height);
+    c.fillStyle=col("--sheet"); c.fillRect(0,0,cv.width,cv.height);
+    c.strokeStyle=col("--rule-soft"); c.lineWidth=1;
+    for(var g=1;g<4;g++){ c.beginPath(); c.moveTo(0,cv.height*g/4); c.lineTo(cv.width,cv.height*g/4); c.stroke(); }
+  });
+  PARTS.forEach(function(p){
+    var s=hist.pop.map(function(c){return c[p.k];});
+    line(pp,s,col("--"+(p.k==="with"?"withdrawn":p.k)),200);
+  });
+  line(pg,hist.gini,col("--accent"),0.7);
+  line(pm,hist.med,col("--accent"),MAXE);
+  line(pm,hist.floor,col("--duty"),MAXE);
+
+  var c=counts(), tot=0; for(var k in c) tot+=c[k];
+  document.getElementById("vPop").textContent = tot+" alive";
+  document.getElementById("vGini").textContent = (hist.gini.length?hist.gini[hist.gini.length-1]:0).toFixed(3);
+  document.getElementById("vMed").textContent =
+    (hist.med.length?hist.med[hist.med.length-1]:0).toFixed(0)+" · floor "+
+    (hist.floor.length?hist.floor[hist.floor.length-1]:0).toFixed(0);
+  document.getElementById("vTick").textContent = tick;
+
+  var rows="", cc=counts(), techByPart={};
+  PARTS.forEach(function(p){techByPart[p.k]={n:0,t:0};});
+  agents.forEach(function(a){ if(a.alive){ techByPart[a.part].n++; techByPart[a.part].t+=a.tech; } });
+  PARTS.forEach(function(p){
+    var tp=techByPart[p.k];
+    var av=tp.n?(tp.t/tp.n).toFixed(2):"—";
+    rows+='<tr><td><span class="sw" style="background:'+col("--"+(p.k==="with"?"withdrawn":p.k))+'"></span>'+
+      p.name+'</td><td>'+cc[p.k]+' &middot; '+av+'</td></tr>';
+  });
+  document.getElementById("tbl").innerHTML=rows;
+}
+
+function loop(){
+  if(running){ step(); }
+  draw(); drawPlots();
+  requestAnimationFrame(loop);
+}
+
+function bindSlider(id,lab,fn){
+  var s=document.getElementById(id), l=document.getElementById(lab);
+  function upd(){ l.textContent=s.value+"%"; if(fn) fn(+s.value); }
+  s.addEventListener("input",upd); upd();
+}
+bindSlider("sNon","lNon",function(v){ nonRival=v/100; });
+bindSlider("sOver","lOver"); bindSlider("sHoard","lHoard"); bindSlider("sDuty","lDuty");
+bindSlider("sRecip","lRecip"); bindSlider("sFree","lFree");
+
+document.getElementById("bPlay").addEventListener("click",function(){
+  running=!running; this.textContent=running?"Pause":"Play";
+});
+document.getElementById("bStep").addEventListener("click",function(){
+  running=false; document.getElementById("bPlay").textContent="Play"; step();
+});
+document.getElementById("bSigWhole").addEventListener("click",function(){
+  signal="whole"; this.classList.add("primary");
+  document.getElementById("bSigEnergy").classList.remove("primary");
+});
+document.getElementById("bSigEnergy").addEventListener("click",function(){
+  signal="energy"; this.classList.add("primary");
+  document.getElementById("bSigWhole").classList.remove("primary");
+});
+document.getElementById("bReset").addEventListener("click",build);
+document.getElementById("bShock").addEventListener("click",function(){ shockUntil=tick+30; });
+
+build(); loop();
+})();
+</script>
+
+</body>
+</html>
