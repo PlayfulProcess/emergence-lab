@@ -92,6 +92,26 @@ Deliberately *not* a 6-month prerequisites-first curriculum. Each step is runnab
 
 ---
 
+## 3. New line: couples and dyads (active)
+
+**Model 03 — [The Dyad Lab](models/dyad-lab.html).** Gottman and Murray's marriage
+equations rendered as two null-clines and their steady states, then run as a *population*
+of 400 dyads rather than solved analytically for one couple.
+
+The population framing is the point, and it is the same move as
+[the Zero-Intelligence Market](models/zero-intelligence.html) above: the spread of outcomes
+may be a property of the interaction structure and of time, not of a taxonomy of couple
+types. Set every couple in the model *identical* and a backward-looking fit still scores
+95% while forward PPV sits near 32% and "type" explains nothing — **an outcome distribution
+that looks like types can be produced with no types in it.**
+
+Claims here are **psychoeducational, not clinical**: the lab teaches a mechanism, it does
+not say anything about any real relationship. Plan, course design, and the research ladder
+(reproduce → re-examine → extend with a body-budget variable → compare interfaces against
+demand/withdraw): [docs/PLAN-couples-course-and-agenda.md](docs/PLAN-couples-course-and-agenda.md).
+
+---
+
 ## Notes
 
 - Python: NumPy / SciPy / Matplotlib, no exotic dependencies yet.

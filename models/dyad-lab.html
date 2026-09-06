@@ -1,0 +1,884 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Dyad Lab</title>
+<meta name="description" content="Gottman and Murray's marriage equations, rendered — two null-clines, their steady states, and a population of dyads that shows where 94% retrodiction and 29% prediction come apart.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,300&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --paper:#eef1ec; --sheet:#fafcf8; --ink:#1a1f1b; --muted:#5d6a61; --faint:#8a958c;
+    --rule:#cdd6cd; --rule-soft:#dee5dd; --accent:#1f6f5c; --accent-soft:#dcebe4;
+    --pa:#3a6ea5; --pb:#9c3b2e; --stable:#1f6f5c; --unstable:#b8860b; --grid:#dee5dd;
+    --warm:#1f6f5c; --cold:#9c3b2e;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#101410; --sheet:#171d18; --ink:#e5ebe3; --muted:#9aa79d; --faint:#6f7d73;
+      --rule:#2b342d; --rule-soft:#222b24; --accent:#5cc6a6; --accent-soft:#16302a;
+      --pa:#6f9fd8; --pb:#d9705d; --stable:#5cc6a6; --unstable:#d9a441; --grid:#222b24;
+      --warm:#5cc6a6; --cold:#d9705d;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#101410; --sheet:#171d18; --ink:#e5ebe3; --muted:#9aa79d; --faint:#6f7d73;
+    --rule:#2b342d; --rule-soft:#222b24; --accent:#5cc6a6; --accent-soft:#16302a;
+    --pa:#6f9fd8; --pb:#d9705d; --stable:#5cc6a6; --unstable:#d9a441; --grid:#222b24;
+    --warm:#5cc6a6; --cold:#d9705d;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--paper);color:var(--ink);margin:0;
+    font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,sans-serif;font-size:15px;line-height:1.55}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 20px 70px}
+  header{padding:48px 0 22px;border-bottom:2px solid var(--ink);display:flex;flex-direction:column;gap:12px}
+  .eyebrow{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--accent);margin:0}
+  h1{font-family:Newsreader,Georgia,serif;font-weight:400;font-size:clamp(32px,6vw,54px);
+    line-height:1.04;letter-spacing:-.02em;margin:0}
+  .deck{font-family:Newsreader,Georgia,serif;font-size:18px;font-style:italic;font-weight:300;
+    color:var(--muted);margin:0;max-width:62ch}
+  h2{font-family:Newsreader,Georgia,serif;font-weight:400;font-size:26px;margin:44px 0 10px}
+  h3.sec{font-family:Newsreader,Georgia,serif;font-weight:400;font-size:21px;margin:30px 0 8px}
+  p{max-width:68ch}
+  a{color:var(--accent)}
+  .lede{font-size:16px}
+
+  .lab{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:20px;margin-top:24px;align-items:start}
+  @media (max-width:940px){.lab{grid-template-columns:1fr}}
+
+  .stage{background:var(--sheet);border:1px solid var(--rule);padding:14px;min-width:0}
+  canvas{display:block;width:100%;height:auto;background:transparent}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media (max-width:700px){.two{grid-template-columns:1fr}}
+  .plot{border:1px solid var(--rule-soft);padding:8px 8px 6px;min-width:0}
+  .plot h4{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.11em;
+    text-transform:uppercase;color:var(--accent);margin:0 0 5px;font-weight:500}
+  .plot .val{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--muted);
+    font-variant-numeric:tabular-nums;margin-bottom:5px;min-height:16px}
+
+  .panel{background:var(--sheet);border:1px solid var(--rule);padding:16px 16px 20px}
+  .panel h3{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--accent);margin:18px 0 8px;font-weight:500}
+  .panel h3:first-child{margin-top:0}
+  .ctl{margin-bottom:12px}
+  .ctl label{display:flex;justify-content:space-between;align-items:baseline;
+    font-size:12.5px;color:var(--muted);margin-bottom:3px;gap:8px}
+  .ctl label b{font-family:"IBM Plex Mono",monospace;font-weight:500;color:var(--ink);
+    font-variant-numeric:tabular-nums}
+  input[type=range]{width:100%;accent-color:var(--accent);margin:0}
+  .hint{font-size:11.5px;color:var(--faint);margin:-6px 0 12px;line-height:1.4}
+  button{font-family:"IBM Plex Mono",monospace;font-size:12px;padding:7px 12px;
+    background:transparent;color:var(--ink);border:1px solid var(--rule);cursor:pointer;
+    letter-spacing:.04em}
+  button:hover{border-color:var(--accent);color:var(--accent)}
+  button.primary{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+  .btns{display:flex;flex-wrap:wrap;gap:7px}
+
+  .legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-family:"IBM Plex Mono",monospace;
+    font-size:11px;color:var(--muted);margin-top:10px}
+  .legend i{display:inline-block;width:11px;height:11px;margin-right:5px;vertical-align:-1px}
+
+  .hood{background:var(--sheet);border:1px solid var(--rule);border-left:3px solid var(--accent);
+    padding:14px 16px;margin:20px 0;font-family:"IBM Plex Mono",monospace;font-size:12.5px;
+    line-height:1.7;overflow-x:auto}
+  .hood .k{color:var(--accent)}
+  .hood .lbl{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);
+    display:block;margin-bottom:8px;font-weight:500}
+  .hood em{color:var(--muted);font-style:normal}
+
+  table{border-collapse:collapse;width:100%;margin:14px 0;font-size:13.5px}
+  th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--rule-soft);vertical-align:top}
+  th{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--accent);font-weight:500}
+  td.num{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums}
+
+  .callout{border:1px solid var(--rule);border-left:3px solid var(--unstable);
+    background:var(--sheet);padding:14px 16px;margin:22px 0}
+  .callout p{margin:0 0 8px}
+  .callout p:last-child{margin-bottom:0}
+  .callout .lbl{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--unstable);display:block;margin-bottom:7px;font-weight:500}
+
+  .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
+  @media (max-width:700px){.metrics{grid-template-columns:1fr}}
+  .metric{border:1px solid var(--rule-soft);padding:10px 12px}
+  .metric .t{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.11em;
+    text-transform:uppercase;color:var(--accent);margin-bottom:5px}
+  .metric .v{font-family:"IBM Plex Mono",monospace;font-size:23px;font-variant-numeric:tabular-nums;
+    line-height:1.1}
+  .metric .s{font-size:11.5px;color:var(--faint);margin-top:4px;line-height:1.35}
+
+  ul.h{padding-left:19px;max-width:68ch}
+  ul.h li{margin-bottom:7px}
+  nav.crumb{font-family:"IBM Plex Mono",monospace;font-size:11.5px;padding-top:22px}
+  nav.crumb a{text-decoration:none}
+  footer{margin-top:52px;padding-top:18px;border-top:1px solid var(--rule);
+    font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--faint);
+    display:flex;flex-wrap:wrap;gap:8px 20px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<nav class="crumb"><a href="../index.html">← Emergence Lab</a></nav>
+
+<header>
+  <p class="eyebrow">Model 03 · runs in this page · nothing is sent anywhere</p>
+  <h1>The Dyad Lab</h1>
+  <p class="deck">Gottman and Murray wrote a marriage as two equations. Here they are, drawn. Then four hundred couples run at once — and the gap between explaining a marriage and predicting one opens up in front of you.</p>
+</header>
+
+<p class="lede">This is a <strong>psychoeducational</strong> instrument, not a clinical one. It cannot tell you anything about your relationship. What it can do is make a handful of ideas — <em>inertia</em>, <em>threshold</em>, <em>repair</em>, <em>two stable states</em>, <em>base rate</em> — into things you can move with your thumb and watch respond.</p>
+
+<h2>Part one — a marriage as two equations</h2>
+
+<p>In <em>The Mathematics of Marriage</em> (2002), Gottman and Murray modelled a conversation between two partners as a pair of coupled difference equations. Each turn, each partner's emotional tone is: <strong>some of where they just were</strong>, plus <strong>where they sit when left alone</strong>, plus <strong>whatever the other partner just did to them</strong>.</p>
+
+<div class="hood">
+  <span class="lbl">Under the hood — the whole model</span>
+  A<span class="k">[t+1]</span> = <span class="k">inertia</span>·A[t] + <span class="k">baseline_A</span> + <span class="k">influence</span>(B[t])<br>
+  B<span class="k">[t+1]</span> = <span class="k">inertia</span>·B[t] + <span class="k">baseline_B</span> + <span class="k">influence</span>(A[t])<br><br>
+  <em>influence(x) is gentle above the threshold and steep below it —<br>
+  that asymmetry is the only place "negativity matters more" lives.</em>
+</div>
+
+<div class="lab">
+  <div class="stage">
+    <div class="two">
+      <div class="plot">
+        <h4>The conversation, turn by turn</h4>
+        <div class="val" id="vSeries">—</div>
+        <canvas id="cSeries" width="620" height="300"></canvas>
+      </div>
+      <div class="plot">
+        <h4>The two null-clines &amp; their steady states</h4>
+        <div class="val" id="vPhase">—</div>
+        <canvas id="cPhase" width="620" height="300"></canvas>
+      </div>
+    </div>
+    <div class="legend">
+      <span><i style="background:var(--pa)"></i>Partner A</span>
+      <span><i style="background:var(--pb)"></i>Partner B</span>
+      <span><i style="background:var(--stable);border-radius:50%"></i>stable steady state</span>
+      <span><i style="background:var(--unstable);border-radius:50%"></i>unstable (the watershed)</span>
+    </div>
+    <div id="ssTable"></div>
+  </div>
+
+  <div class="panel">
+    <h3>Run</h3>
+    <div class="btns">
+      <button id="bPlay" class="primary">Pause</button>
+      <button id="bRestart">Restart</button>
+      <button id="bStress">Stressor</button>
+    </div>
+
+    <h3>Lesson 1 · staying put</h3>
+    <div class="ctl"><label>Emotional inertia <b id="lInertia">0.55</b></label>
+      <input type="range" id="sInertia" min="0" max="90" value="55"></div>
+    <p class="hint">How much of this turn carries into the next. At 0 each turn starts fresh; high inertia is what "we can't drop it" looks like as a number.</p>
+
+    <div class="ctl"><label>Baseline A <b id="lBaseA">0.30</b></label>
+      <input type="range" id="sBaseA" min="-150" max="150" value="30"></div>
+    <div class="ctl"><label>Baseline B <b id="lBaseB">0.10</b></label>
+      <input type="range" id="sBaseB" min="-150" max="150" value="10"></div>
+    <p class="hint">Where each partner drifts <em>with no partner in the room</em>. Gottman called this the uninfluenced steady state. It is a parameter, not a personality.</p>
+
+    <h3>Lesson 2 · reaching each other</h3>
+    <div class="ctl"><label>Influence, warm side <b id="lPos">0.45</b></label>
+      <input type="range" id="sPos" min="0" max="120" value="45"></div>
+    <div class="ctl"><label>Influence, cold side <b id="lNeg">1.10</b></label>
+      <input type="range" id="sNeg" min="0" max="300" value="110"></div>
+    <p class="hint">Set both equal and warmth and coldness land with the same weight. Pull the cold side above the warm one and you have built negativity dominance.</p>
+
+    <h3>Lesson 3 · the threshold</h3>
+    <div class="ctl"><label>Negativity threshold <b id="lThr">-0.60</b></label>
+      <input type="range" id="sThr" min="-250" max="0" value="-60"></div>
+    <p class="hint">How far down the other has to go before the steep slope takes over. Near zero is a hair trigger. Far down is the couple that lets a lot pass — for better and for worse.</p>
+
+    <h3>Lesson 4 · repair &amp; damping</h3>
+    <div class="ctl"><label>Repair strength <b id="lRep">0.35</b></label>
+      <input type="range" id="sRep" min="0" max="150" value="35"></div>
+    <div class="ctl"><label>Damping strength <b id="lDam">0.15</b></label>
+      <input type="range" id="sDam" min="0" max="150" value="15"></div>
+    <p class="hint">Repair fires only when the other has dropped below the threshold — it is a term with a trigger, not general niceness. Damping is the brake on getting carried away upward.</p>
+
+    <h3>Noise</h3>
+    <div class="ctl"><label>Turn-to-turn noise <b id="lNoise">0.25</b></label>
+      <input type="range" id="sNoise" min="0" max="150" value="25"></div>
+
+    <h3>Start the conversation at</h3>
+    <div class="btns">
+      <button id="bWarm" class="primary">Warm</button>
+      <button id="bNeutral">Neutral</button>
+      <button id="bCold">Cold</button>
+    </div>
+    <p class="hint">Same couple, same dials. Only where the conversation opens changes.</p>
+  </div>
+</div>
+
+<h3 class="sec">What to look for</h3>
+<ul class="h">
+  <li><strong>Turn the influence sliders to zero.</strong> Two flat lines at their own baselines. There is no couple yet — just two people in a room.</li>
+  <li><strong>Turn influence back up.</strong> The pair settles somewhere <em>neither baseline predicts</em>. That is the first honest thing this model says: the couple is a third object with states of its own.</li>
+  <li><strong>Raise the cold-side influence past about 1.4.</strong> A second stable state appears in the right-hand panel, down in the cold corner — and a gold point opens between them. That gold point is a watershed: start on one side and you slide to the warm state, start on the other and you slide to the cold one. <em>Same couple. Same dials.</em></li>
+  <li><strong>Now press Warm, then Cold.</strong> Identical parameters, opposite destinations. "We always end up here" turns out to be a property of the shape, not of anyone's character.</li>
+  <li><strong>Press Stressor</strong> during a warm run. Whether it recovers tells you what resilience means here: not the absence of a bad patch, but the return.</li>
+</ul>
+
+<h2>Part two — four hundred couples, and where 94% becomes 29%</h2>
+
+<p>The famous number attached to this work is a <strong>94% accuracy</strong> in sorting couples who divorced from couples who did not (Buehlman, Gottman &amp; Katz 1992 — 52 couples). When independent researchers later asked what that model predicts for a couple you have <em>not</em> already seen the ending of, the positive predictive value came out around <strong>29%</strong> (Heyman &amp; Smith Slep 2001).</p>
+
+<p>Nothing dishonest has to happen for that gap to open. Two ordinary things produce it, and both are dials below.</p>
+
+<div class="lab">
+  <div class="stage">
+    <div class="two">
+      <div class="plot">
+        <h4>Every couple's trajectory</h4>
+        <div class="val" id="vSpag">—</div>
+        <canvas id="cSpag" width="620" height="300"></canvas>
+      </div>
+      <div class="plot">
+        <h4>Where they ended up</h4>
+        <div class="val" id="vHist">—</div>
+        <canvas id="cHist" width="620" height="300"></canvas>
+      </div>
+    </div>
+
+    <div class="metrics">
+      <div class="metric">
+        <div class="t">Looking back (fitted)</div>
+        <div class="v" id="mBack">—</div>
+        <div class="s">A split using each couple's <em>whole</em> history, scored on the same couples it was tuned on. This is the 94%-shaped number.</div>
+      </div>
+      <div class="metric">
+        <div class="t">Looking forward (held out)</div>
+        <div class="v" id="mFwd">—</div>
+        <div class="s">Rule calibrated on half the couples from their first turns only, then applied to couples it has never seen.</div>
+      </div>
+      <div class="metric">
+        <div class="t">If it says "this one" — how often right</div>
+        <div class="v" id="mPPV">—</div>
+        <div class="s">Positive predictive value. This is the number a person in the room actually needs, and the one that collapses.</div>
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--faint);margin:10px 0 0;font-family:'IBM Plex Mono',monospace">
+      Both rules are calibrated to catch 80% of the separations — the way a screening
+      instrument is set, not by maximising accuracy. (Maximising accuracy was the first
+      version; at a low base rate it degenerated into flagging almost nobody. Noted on
+      the page rather than quietly fixed.)</p>
+
+    <div id="confTable"></div>
+  </div>
+
+  <div class="panel">
+    <h3>Population</h3>
+    <div class="btns">
+      <button id="bRun" class="primary">Run 400 couples</button>
+    </div>
+
+    <h3>The first ordinary thing</h3>
+    <div class="ctl"><label>How common separation is <b id="lBase">24%</b></label>
+      <input type="range" id="sBase" min="4" max="60" value="24"></div>
+    <p class="hint">The base rate. Drag it down and watch the third box fall while the first two barely move. A test can be accurate and still be wrong most times it speaks — that is arithmetic, not a flaw in the researchers.</p>
+
+    <div class="ctl"><label>Turns you get to see first <b id="lPeek">15</b></label>
+      <input type="range" id="sPeek" min="3" max="60" value="15"></div>
+    <p class="hint">Prediction only gets the opening. Fitting gets the ending too.</p>
+
+    <div class="ctl"><label>How much life happens after <b id="lLife">1.00</b></label>
+      <input type="range" id="sLife" min="0" max="250" value="100"></div>
+    <p class="hint">Illness, work, a birth, a move — circumstances that drift after anyone looked. Set this to zero and prediction becomes nearly perfect, because the future stops containing anything the past didn't. Every point above zero is information no early measurement could have held.</p>
+
+    <h3>The second ordinary thing</h3>
+    <div class="btns">
+      <button id="bTypes" class="primary">Couples differ</button>
+      <button id="bNoTypes">Couples identical</button>
+    </div>
+    <p class="hint" id="hTypes">Right now every couple has its own dials, drawn at random — the usual assumption: outcomes track stable types.</p>
+
+    <div class="ctl"><label>Spread between couples <b id="lSpread">1.00</b></label>
+      <input type="range" id="sSpread" min="0" max="200" value="100"></div>
+
+    <div class="ctl"><label>Noise inside a couple <b id="lPNoise">0.55</b></label>
+      <input type="range" id="sPNoise" min="0" max="200" value="55"></div>
+
+    <h3>Read-out</h3>
+    <div class="ctl"><label>Type explains outcome <b id="lR2">—</b></label></div>
+    <p class="hint">How much of who-separated is accounted for by the couple's own parameters. Press <em>Couples identical</em> and this goes to nothing — while the two pictures above barely change.</p>
+  </div>
+</div>
+
+<h3 class="sec">What to look for</h3>
+<ul class="h">
+  <li><strong>Drag "how much life happens after" to zero.</strong> Prediction jumps to about 94% and nearly matches the backward-looking number. When the future holds nothing the past didn't, there is no gap at all. Every point above zero is the gap being manufactured — not by bad science, but by time passing.</li>
+  <li><strong>Drag the base rate down.</strong> Watch the second box <em>rise</em> while the third <em>falls</em> — around 45% separation the PPV sits near 82%; around 11% it lands near 48%. The instrument did not get worse. Rarity did that. This is the whole of what "the test is 90% accurate" fails to tell you.</li>
+  <li><strong>Press "Couples identical", then look at the bottom read-out.</strong> Type explains 0% of who separated — because there are no types. Now look back up at the first box: still around 95%.</li>
+  <li><strong>Then put the base rate at 11% as well.</strong> PPV around 16%: five out of six couples this model points at will be fine.</li>
+</ul>
+
+<div class="callout">
+  <span class="lbl">The alternative hypothesis this lab exists to state</span>
+  <p>Press <strong>Couples identical</strong>. Every couple now has <em>exactly the same</em> parameters — no types, no traits, no differences of any kind. The only thing separating them is which random turns they happened to get.</p>
+  <p>The trajectories still spread. Some still end cold. The histogram still looks bimodal. You can still fit a model that sorts them at high accuracy after the fact — and it will still predict badly going forward. <strong>An outcome distribution that looks like types can be produced with no types in it.</strong></p>
+  <p>This is the move <a href="zero-intelligence.html">the Zero-Intelligence Market</a> makes about prices: the order in the result came from the structure, not from anything clever inside the agents. Applied here it is a real, testable alternative to the trait story — and it is not a claim that types <em>don't</em> exist. It is the narrower and more useful claim that <strong>an outcome spread alone cannot tell you whether they do.</strong></p>
+  <p style="border-top:1px solid var(--rule);padding-top:10px;font-size:13px;color:var(--muted)">
+  <strong>One thing this page must not be allowed to imply.</strong> In the no-types
+  setting the PPV lands near 32%, which is close to the 29% Heyman and Smith Slep
+  reported. <em>That is a coincidence of the dial positions, not a reproduction of their
+  result.</em> Nothing here was fitted to any study, no real couple is in this data, and
+  moving any slider moves that number. Treat the resemblance as a prompt to go read the
+  papers, never as a finding.</p>
+</div>
+
+<h2>What this model cannot tell you</h2>
+
+<table>
+  <tr><th>It looks like</th><th>It is actually</th></tr>
+  <tr><td>A prediction about a relationship</td><td>A shape with dials. It has never met anyone. Nothing you type here is measured, scored, stored, or sent.</td></tr>
+  <tr><td>Gottman's model</td><td>The published <em>form</em> of it — inertia, baseline, an asymmetric influence function, repair and damping. The constants here are illustrative, not the fitted ones from any study.</td></tr>
+  <tr><td>Evidence about couples</td><td>Evidence about <em>the model</em>. A simulation can show a story is coherent and can generate hypotheses. It cannot make a claim about people true.</td></tr>
+  <tr><td>A reason to distrust the research</td><td>A reason to read the numbers correctly. The 94% and the 29% are answers to two different questions, and both are honest answers.</td></tr>
+</table>
+
+<p>The empirical pattern that survives across models, incidentally, is not any of the origin stories — it is <strong>demand/withdraw</strong>, one partner pressing while the other pulls back, which meta-analysis puts at around <em>r</em> = .36 with relationship dissatisfaction (Schrodt, Witt &amp; Shimkowski 2014). A useful next test for this lab: do the Gottman-shaped rules, attachment-shaped rules, and NVC-shaped rules <em>all</em> reproduce it? If several different machines generate the one measured pattern, that says something about how much any of the machines can claim.</p>
+
+<h3 class="sec">Sources</h3>
+<ul class="h">
+  <li>Gottman, Murray, Swanson, Tyson &amp; Swanson (2002), <em>The Mathematics of Marriage: Dynamic Nonlinear Models</em>, MIT Press — the model form used here.</li>
+  <li>Buehlman, Gottman &amp; Katz (1992), <em>Journal of Family Psychology</em> 5, 295–318 — the 94%, on 52 couples.</li>
+  <li>Heyman &amp; Smith Slep (2001), <em>Journal of Marriage and Family</em> 63, 473–479 — the replication and the 29% PPV.</li>
+  <li>Schrodt, Witt &amp; Shimkowski (2014), <em>Communication Monographs</em> 81, 28–58 — demand/withdraw meta-analysis.</li>
+  <li>Gode &amp; Sunder (1993), <em>Journal of Political Economy</em> 101, 119–137 — the zero-intelligence argument this lab borrows.</li>
+</ul>
+
+<footer>
+  <span>Emergence Lab</span>
+  <span>CC BY-SA 4.0</span>
+  <span>Model 03 · psychoeducational, not clinical</span>
+  <span>Runs entirely in your browser</span>
+</footer>
+
+</div>
+
+<script>
+(function(){
+"use strict";
+
+function col(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim()||"#888";}
+function clamp(x,a,b){return x<a?a:(x>b?b:x);}
+function fmt(x,n){return (x<0?"":"")+x.toFixed(n===undefined?2:n);}
+
+/* ---------- seeded RNG (so a run is reproducible) ---------- */
+function mulberry(seed){
+  return function(){
+    seed|=0; seed=seed+0x6D2B79F5|0;
+    var t=Math.imul(seed^seed>>>15,1|seed);
+    t=t+Math.imul(t^t>>>7,61|t)^t;
+    return ((t^t>>>14)>>>0)/4294967296;
+  };
+}
+function gauss(rng){
+  var u=1-rng(), v=rng();
+  return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
+}
+
+/* =========================================================
+   PART ONE — the single dyad
+   ========================================================= */
+
+var P = {
+  inertia:0.55, baseA:0.30, baseB:0.10,
+  pos:0.45, neg:1.10, thr:-0.60,
+  repair:0.35, damp:0.15, noise:0.25
+};
+
+var RANGE = 4;              // affect scale, SPAFF-like: -4 .. +4
+var SAT   = 2.2;            // influence saturates here
+
+/* The influence function. Gentle above the threshold, steep below it.
+   Everything the model says about "negativity matters more" is in this shape. */
+function influence(x, p){
+  var v;
+  if (x >= p.thr) v = p.pos * x;
+  else            v = p.pos * p.thr + p.neg * (x - p.thr);
+  /* repair fires only once the other has gone below the threshold */
+  if (x < p.thr)  v += p.repair;
+  /* damping brakes runaway warmth */
+  if (x > 1.0)    v -= p.damp * (x - 1.0);
+  return clamp(v, -SAT, SAT);
+}
+function dInfluence(x,p){ var h=1e-4; return (influence(x+h,p)-influence(x-h,p))/(2*h); }
+
+function nextA(a,b,p){ return clamp(p.inertia*a + p.baseA + influence(b,p), -RANGE, RANGE); }
+function nextB(a,b,p){ return clamp(p.inertia*b + p.baseB + influence(a,p), -RANGE, RANGE); }
+
+/* null-clines: A rests where A = inertia*A + baseA + influence(B)  */
+function ncA(b,p){ return clamp((p.baseA + influence(b,p))/(1-p.inertia), -RANGE, RANGE); }
+function ncB(a,p){ return clamp((p.baseB + influence(a,p))/(1-p.inertia), -RANGE, RANGE); }
+
+/* steady states: scan A, find where ncA(ncB(A)) - A changes sign, then bisect */
+function steadyStates(p){
+  var out=[], N=1400, prevA=-RANGE, prevG=ncA(ncB(-RANGE,p),p)-(-RANGE);
+  for(var i=1;i<=N;i++){
+    var a=-RANGE + 2*RANGE*i/N;
+    var g=ncA(ncB(a,p),p)-a;
+    if((prevG<0&&g>=0)||(prevG>0&&g<=0)){
+      var lo=prevA, hi=a;
+      for(var k=0;k<60;k++){
+        var mid=(lo+hi)/2, gm=ncA(ncB(mid,p),p)-mid;
+        if((gm<0)===(prevG<0)) lo=mid; else hi=mid;
+      }
+      var A=(lo+hi)/2, B=ncB(A,p);
+      out.push({a:A, b:B, stable:isStable(A,B,p)});
+    }
+    prevA=a; prevG=g;
+  }
+  /* de-duplicate near-identical roots */
+  var uniq=[];
+  out.forEach(function(s){
+    if(!uniq.some(function(u){return Math.abs(u.a-s.a)<0.02 && Math.abs(u.b-s.b)<0.02;})) uniq.push(s);
+  });
+  return uniq;
+}
+
+/* stability from the 2x2 Jacobian of the coupled map */
+function isStable(a,b,p){
+  var r=p.inertia, iBA=dInfluence(b,p), iAB=dInfluence(a,p);
+  var disc=iBA*iAB;                       /* ((r-r)/2)^2 = 0 since inertia is shared */
+  if(disc>=0){
+    var s=Math.sqrt(disc);
+    return Math.abs(r+s)<1 && Math.abs(r-s)<1;
+  }
+  return Math.sqrt(r*r + (-disc)) < 1;    /* complex pair: modulus */
+}
+
+var A=1.4, B=1.2, hist=[], running=true, stressUntil=-1, turn=0;
+
+function resetRun(start){
+  if(start==="warm"){A=1.6;B=1.4;}
+  else if(start==="cold"){A=-1.6;B=-1.4;}
+  else {A=0.05;B=-0.05;}
+  hist=[]; turn=0; stressUntil=-1;
+}
+
+var rngA=mulberry(20260906);
+function stepDyad(){
+  var p=P, shock = (turn<stressUntil) ? -0.9 : 0;
+  var na=nextA(A,B,p)+P.noise*gauss(rngA)+shock;
+  var nb=nextB(A,B,p)+P.noise*gauss(rngA)+shock;
+  A=clamp(na,-RANGE,RANGE); B=clamp(nb,-RANGE,RANGE);
+  hist.push([A,B]); if(hist.length>120) hist.shift();
+  turn++;
+}
+
+/* ---------- drawing part one ---------- */
+function fitCanvas(cv){
+  var dpr=window.devicePixelRatio||1, w=cv.clientWidth||cv.width;
+  var h=Math.round(w*(cv.height/cv.width));
+  if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){
+    cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr);
+  }
+  cv.style.height=h+"px";
+  var g=cv.getContext("2d"); g.setTransform(dpr,0,0,dpr,0,0);
+  return {g:g,w:w,h:h};
+}
+
+function drawSeries(){
+  var c=fitCanvas(document.getElementById("cSeries")), g=c.g, W=c.w, H=c.h;
+  g.clearRect(0,0,W,H);
+  var pad=26, x0=pad, x1=W-8, y0=10, y1=H-18;
+  function py(v){ return y1-(v+RANGE)/(2*RANGE)*(y1-y0); }
+  /* grid + zero line */
+  g.strokeStyle=col("--grid"); g.lineWidth=1;
+  [-2,0,2].forEach(function(v){
+    g.beginPath(); g.moveTo(x0,py(v)); g.lineTo(x1,py(v)); g.stroke();
+  });
+  g.strokeStyle=col("--faint"); g.setLineDash([2,3]);
+  g.beginPath(); g.moveTo(x0,py(0)); g.lineTo(x1,py(0)); g.stroke(); g.setLineDash([]);
+  g.fillStyle=col("--faint"); g.font='10px "IBM Plex Mono", monospace';
+  g.fillText("warm",2,py(2.4)); g.fillText("cold",2,py(-2.0)); g.fillText("0",10,py(0)-2);
+  if(!hist.length) return;
+  [0,1].forEach(function(idx){
+    g.strokeStyle = idx===0?col("--pa"):col("--pb"); g.lineWidth=1.7;
+    g.beginPath();
+    hist.forEach(function(pt,i){
+      var x=x0+(x1-x0)*i/Math.max(1,hist.length-1), y=py(pt[idx]);
+      i?g.lineTo(x,y):g.moveTo(x,y);
+    });
+    g.stroke();
+  });
+  document.getElementById("vSeries").textContent =
+    "turn "+turn+"   A "+fmt(A)+"   B "+fmt(B);
+}
+
+function drawPhase(ss){
+  var c=fitCanvas(document.getElementById("cPhase")), g=c.g, W=c.w, H=c.h;
+  g.clearRect(0,0,W,H);
+  var pad=30, x0=pad, x1=W-10, y0=10, y1=H-24;
+  function px(v){ return x0+(v+RANGE)/(2*RANGE)*(x1-x0); }
+  function py(v){ return y1-(v+RANGE)/(2*RANGE)*(y1-y0); }
+  g.strokeStyle=col("--grid"); g.lineWidth=1;
+  g.strokeRect(x0,y0,x1-x0,y1-y0);
+  g.setLineDash([2,3]);
+  g.beginPath(); g.moveTo(px(0),y0); g.lineTo(px(0),y1);
+  g.moveTo(x0,py(0)); g.lineTo(x1,py(0)); g.stroke(); g.setLineDash([]);
+  g.fillStyle=col("--faint"); g.font='10px "IBM Plex Mono", monospace';
+  g.fillText("A →",x1-30,py(0)-5); g.fillText("B ↑",px(0)+5,y0+11);
+
+  /* A's null-cline: for each B, A rests at ncA(B) */
+  g.strokeStyle=col("--pa"); g.lineWidth=1.8; g.beginPath();
+  for(var i=0;i<=300;i++){
+    var b=-RANGE+2*RANGE*i/300, a=ncA(b,P);
+    i?g.lineTo(px(a),py(b)):g.moveTo(px(a),py(b));
+  }
+  g.stroke();
+  /* B's null-cline: for each A, B rests at ncB(A) */
+  g.strokeStyle=col("--pb"); g.lineWidth=1.8; g.beginPath();
+  for(var j=0;j<=300;j++){
+    var a2=-RANGE+2*RANGE*j/300, b2=ncB(a2,P);
+    j?g.lineTo(px(a2),py(b2)):g.moveTo(px(a2),py(b2));
+  }
+  g.stroke();
+
+  /* the live conversation as a path in the plane */
+  if(hist.length>1){
+    g.strokeStyle=col("--faint"); g.lineWidth=1; g.globalAlpha=.75; g.beginPath();
+    hist.forEach(function(pt,i){ i?g.lineTo(px(pt[0]),py(pt[1])):g.moveTo(px(pt[0]),py(pt[1])); });
+    g.stroke(); g.globalAlpha=1;
+    g.fillStyle=col("--ink");
+    g.beginPath(); g.arc(px(A),py(B),3.2,0,7); g.fill();
+  }
+
+  /* steady states */
+  ss.forEach(function(s){
+    g.fillStyle = s.stable?col("--stable"):col("--unstable");
+    g.beginPath(); g.arc(px(s.a),py(s.b), s.stable?6:5, 0, 7); g.fill();
+    if(!s.stable){
+      g.strokeStyle=col("--paper"); g.lineWidth=1.5;
+      g.beginPath(); g.arc(px(s.a),py(s.b),2.2,0,7); g.stroke();
+    }
+  });
+
+  var nStable=ss.filter(function(s){return s.stable;}).length;
+  document.getElementById("vPhase").textContent =
+    ss.length+" steady state"+(ss.length===1?"":"s")+" · "+nStable+" stable";
+}
+
+function drawSSTable(ss){
+  var el=document.getElementById("ssTable");
+  if(!ss.length){ el.innerHTML=""; return; }
+  var rows=ss.map(function(s,i){
+    var kind=s.stable?"stable — the pair settles here":"unstable — the watershed between them";
+    var mood=(s.a+s.b)/2>0.4?"warm":((s.a+s.b)/2<-0.4?"cold":"neutral");
+    return "<tr><td class='num'>"+(i+1)+"</td><td class='num'>A "+fmt(s.a)+" · B "+fmt(s.b)+
+           "</td><td>"+mood+"</td><td>"+kind+"</td></tr>";
+  }).join("");
+  el.innerHTML="<table><tr><th>#</th><th>Where</th><th>Tone</th><th>Kind</th></tr>"+rows+"</table>";
+}
+
+var lastSS=[];
+function refreshStatics(){ lastSS=steadyStates(P); drawPhase(lastSS); drawSSTable(lastSS); }
+
+var acc=0;
+function loop(ts){
+  if(running){ acc++; if(acc%3===0) stepDyad(); }
+  drawSeries(); drawPhase(lastSS);
+  requestAnimationFrame(loop);
+}
+
+/* ---------- part one controls ---------- */
+function bind(id,labId,scale,key,dec){
+  var s=document.getElementById(id), l=document.getElementById(labId);
+  function upd(){
+    P[key]=(+s.value)/scale;
+    l.textContent=fmt(P[key],dec===undefined?2:dec);
+    refreshStatics();
+  }
+  s.addEventListener("input",upd); upd();
+}
+bind("sInertia","lInertia",100,"inertia");
+bind("sBaseA","lBaseA",100,"baseA");
+bind("sBaseB","lBaseB",100,"baseB");
+bind("sPos","lPos",100,"pos");
+bind("sNeg","lNeg",100,"neg");
+bind("sThr","lThr",100,"thr");
+bind("sRep","lRep",100,"repair");
+bind("sDam","lDam",100,"damp");
+bind("sNoise","lNoise",100,"noise");
+
+document.getElementById("bPlay").addEventListener("click",function(){
+  running=!running; this.textContent=running?"Pause":"Play";
+});
+document.getElementById("bRestart").addEventListener("click",function(){ resetRun("neutral"); });
+document.getElementById("bStress").addEventListener("click",function(){ stressUntil=turn+14; });
+function startBtn(id,mode){
+  document.getElementById(id).addEventListener("click",function(){
+    ["bWarm","bNeutral","bCold"].forEach(function(b){
+      document.getElementById(b).classList.remove("primary");
+    });
+    this.classList.add("primary"); resetRun(mode);
+  });
+}
+startBtn("bWarm","warm"); startBtn("bNeutral","neutral"); startBtn("bCold","cold");
+
+resetRun("warm"); refreshStatics(); requestAnimationFrame(loop);
+
+/* =========================================================
+   PART TWO — a population of dyads
+   ========================================================= */
+
+var POP = {
+  n:400, turns:60, peek:15, baseTarget:0.24,
+  types:true, spread:1.00, pnoise:0.55, life:1.00
+};
+var popResult=null;
+
+function runPopulation(){
+  var rng=mulberry(424242);
+  var couples=[], i, t;
+
+  /* one shared "climate" term tuned to hit the requested separation rate */
+  var climate=0;
+  for(var iter=0; iter<26; iter++){
+    var got=simulate(mulberry(424242), climate, false).rate;
+    if(Math.abs(got-POP.baseTarget)<0.005) break;
+    climate += (POP.baseTarget-got)*1.6;
+    climate = clamp(climate,-2.5,2.5);
+  }
+  popResult=simulate(mulberry(424242), climate, true);
+  drawPopulation();
+}
+
+function simulate(rng, climate, keep){
+  var couples=[], sep=0;
+  for(var i=0;i<POP.n;i++){
+    var p;
+    if(POP.types){
+      p={ inertia: clamp(P.inertia + 0.10*POP.spread*gauss(rng), 0, 0.92),
+          baseA:  P.baseA + 0.55*POP.spread*gauss(rng) - climate,
+          baseB:  P.baseB + 0.55*POP.spread*gauss(rng) - climate,
+          pos:    Math.max(0, P.pos + 0.18*POP.spread*gauss(rng)),
+          neg:    Math.max(0, P.neg + 0.35*POP.spread*gauss(rng)),
+          thr:    clamp(P.thr + 0.30*POP.spread*gauss(rng), -2.5, 0),
+          repair: Math.max(0, P.repair + 0.14*POP.spread*gauss(rng)),
+          damp:   P.damp };
+    } else {
+      /* every couple identical — only the noise draws differ */
+      p={ inertia:P.inertia, baseA:P.baseA-climate, baseB:P.baseB-climate,
+          pos:P.pos, neg:P.neg, thr:P.thr, repair:P.repair, damp:P.damp };
+    }
+    var a=0.6+0.4*gauss(rng), b=0.6+0.4*gauss(rng), traj=[], sum=0, early=0;
+    /* circumstances drift as the years pass — a random walk on each baseline.
+       Whatever drifts AFTER the peek window is, by construction, information
+       no early measurement could have contained. This is the honest engine of
+       the retrodiction/prediction gap. */
+    var driftA=0, driftB=0;
+    for(var t=0;t<POP.turns;t++){
+      driftA += POP.life*0.075*gauss(rng);
+      driftB += POP.life*0.075*gauss(rng);
+      var na=p.inertia*a + p.baseA + driftA + influence(b,p) + POP.pnoise*gauss(rng);
+      var nb=p.inertia*b + p.baseB + driftB + influence(a,p) + POP.pnoise*gauss(rng);
+      a=clamp(na,-RANGE,RANGE); b=clamp(nb,-RANGE,RANGE);
+      var m=(a+b)/2; traj.push(m); sum+=m;
+      if(t<POP.peek) early+=m;
+    }
+    var tail=0; for(var k=POP.turns-15;k<POP.turns;k++) tail+=traj[k];
+    tail/=15;
+    var separated = tail < -0.35;
+    if(separated) sep++;
+    /* "type score" = the couple's own dispositional load, for the read-out */
+    var typeScore = (p.baseA+p.baseB)/2 - 0.45*(p.neg-p.pos) + 0.35*p.repair;
+    couples.push({traj:traj, whole:sum/POP.turns, early:early/POP.peek,
+                  separated:separated, typeScore:typeScore});
+  }
+  var out={rate:sep/POP.n};
+  if(keep){ out.couples=couples; out.climate=climate; }
+  return out;
+}
+
+/* Threshold chosen the way a screening instrument is actually calibrated:
+   at a target sensitivity — catch this share of the couples who separate.
+
+   NOT by maximising accuracy. That was the first version, and at a low base
+   rate it degenerated into "predict that almost nobody separates", which
+   scores 96% accuracy, flags two couples, and reports a meaningless PPV of
+   100%. A rule of mine was deciding the answer. Logged rather than hidden. */
+var TARGET_SENS = 0.80;
+function splitAtSensitivity(list, key){
+  var pos=list.filter(function(c){return c.separated;})
+              .map(function(c){return c[key];})
+              .sort(function(x,y){return x-y;});
+  if(!pos.length) return {thr:-RANGE};
+  var idx=clamp(Math.floor(TARGET_SENS*pos.length), 0, pos.length-1);
+  /* flag everything scoring below this: catches ~TARGET_SENS of the separations */
+  return {thr: pos[idx]};
+}
+function score(list, key, thr){
+  var tp=0,fp=0,tn=0,fn=0;
+  list.forEach(function(c){
+    var pred=c[key]<thr;
+    if(pred&&c.separated) tp++;
+    else if(pred&&!c.separated) fp++;
+    else if(!pred&&!c.separated) tn++;
+    else fn++;
+  });
+  return {tp:tp,fp:fp,tn:tn,fn:fn,
+          acc:(tp+tn)/list.length,
+          ppv: (tp+fp)?tp/(tp+fp):0,
+          sens:(tp+fn)?tp/(tp+fn):0};
+}
+function corr(xs,ys){
+  var n=xs.length, mx=0,my=0,i;
+  for(i=0;i<n;i++){mx+=xs[i];my+=ys[i];} mx/=n; my/=n;
+  var sxy=0,sxx=0,syy=0;
+  for(i=0;i<n;i++){var dx=xs[i]-mx,dy=ys[i]-my; sxy+=dx*dy; sxx+=dx*dx; syy+=dy*dy;}
+  if(sxx<1e-12||syy<1e-12) return 0;
+  return sxy/Math.sqrt(sxx*syy);
+}
+
+function drawPopulation(){
+  if(!popResult||!popResult.couples) return;
+  var cs=popResult.couples;
+
+  /* --- looking back: calibrate on the whole history, score the same couples --- */
+  var back=splitAtSensitivity(cs,"whole");
+  var backScored=score(cs,"whole",back.thr);
+
+  /* --- looking forward: calibrate on half using only the opening turns,
+         then score couples it has never seen --- */
+  var train=cs.filter(function(_,i){return i%2===0;});
+  var test =cs.filter(function(_,i){return i%2===1;});
+  var fwd=splitAtSensitivity(train,"early");
+  var fwdScored=score(test,"early",fwd.thr);
+
+  document.getElementById("mBack").textContent=Math.round(backScored.acc*100)+"%";
+  document.getElementById("mFwd").textContent =Math.round(fwdScored.acc*100)+"%";
+  document.getElementById("mPPV").textContent =Math.round(fwdScored.ppv*100)+"%";
+
+  var rate=cs.filter(function(c){return c.separated;}).length/cs.length;
+  document.getElementById("vSpag").textContent =
+    cs.length+" couples · "+Math.round(rate*100)+"% ended cold";
+  document.getElementById("vHist").textContent =
+    "mean tone over the last 15 turns";
+
+  var r=corr(cs.map(function(c){return c.typeScore;}),
+             cs.map(function(c){return c.separated?0:1;}));
+  document.getElementById("lR2").textContent=Math.round(r*r*100)+"%";
+
+  document.getElementById("confTable").innerHTML =
+    "<table>"+
+    "<tr><th></th><th>Model says they separate</th><th>Model says they stay</th></tr>"+
+    "<tr><td><strong>Actually separated</strong></td><td class='num'>"+fwdScored.tp+"</td><td class='num'>"+fwdScored.fn+"</td></tr>"+
+    "<tr><td><strong>Actually stayed</strong></td><td class='num'>"+fwdScored.fp+"</td><td class='num'>"+fwdScored.tn+"</td></tr>"+
+    "</table>"+
+    "<p style='font-size:12.5px;color:var(--muted);margin:6px 0 0'>Held-out couples, judged from their first "+
+    POP.peek+" turns. Of the "+(fwdScored.tp+fwdScored.fp)+" this model points at, "+fwdScored.tp+" actually separated.</p>";
+
+  drawSpaghetti(cs);
+  drawHist(cs);
+}
+
+function drawSpaghetti(cs){
+  var c=fitCanvas(document.getElementById("cSpag")), g=c.g, W=c.w, H=c.h;
+  g.clearRect(0,0,W,H);
+  var x0=26,x1=W-8,y0=10,y1=H-18;
+  function px(i){ return x0+(x1-x0)*i/(POP.turns-1); }
+  function py(v){ return y1-(v+RANGE)/(2*RANGE)*(y1-y0); }
+  g.strokeStyle=col("--grid"); g.beginPath();
+  g.moveTo(x0,py(0)); g.lineTo(x1,py(0)); g.stroke();
+  g.fillStyle=col("--faint"); g.font='10px "IBM Plex Mono", monospace';
+  g.fillText("warm",2,py(2.4)); g.fillText("cold",2,py(-2.2));
+  /* the peek window */
+  g.fillStyle=col("--accent-soft"); g.globalAlpha=.55;
+  g.fillRect(x0,y0,px(POP.peek-1)-x0,y1-y0); g.globalAlpha=1;
+  g.fillStyle=col("--accent");
+  g.fillText("what prediction sees",x0+4,y0+11);
+
+  var stepEvery=Math.max(1,Math.floor(cs.length/110));
+  for(var k=0;k<cs.length;k+=stepEvery){
+    var cc=cs[k];
+    g.strokeStyle = cc.separated?col("--cold"):col("--warm");
+    g.globalAlpha=.30; g.lineWidth=1;
+    g.beginPath();
+    for(var t=0;t<cc.traj.length;t++){ t?g.lineTo(px(t),py(cc.traj[t])):g.moveTo(px(t),py(cc.traj[t])); }
+    g.stroke();
+  }
+  g.globalAlpha=1;
+}
+
+function drawHist(cs){
+  var c=fitCanvas(document.getElementById("cHist")), g=c.g, W=c.w, H=c.h;
+  g.clearRect(0,0,W,H);
+  var x0=26,x1=W-8,y0=14,y1=H-22, NB=44, bins=new Array(NB).fill(0), sepBins=new Array(NB).fill(0);
+  cs.forEach(function(cc){
+    var tail=0; for(var k=POP.turns-15;k<POP.turns;k++) tail+=cc.traj[k];
+    tail/=15;
+    var idx=clamp(Math.floor((tail+RANGE)/(2*RANGE)*NB),0,NB-1);
+    bins[idx]++; if(cc.separated) sepBins[idx]++;
+  });
+  var maxv=Math.max.apply(null,bins)||1, bw=(x1-x0)/NB;
+  for(var i=0;i<NB;i++){
+    if(!bins[i]) continue;
+    var h=(bins[i]/maxv)*(y1-y0);
+    g.fillStyle=col("--warm"); g.globalAlpha=.55;
+    g.fillRect(x0+i*bw, y1-h, bw-1, h);
+    if(sepBins[i]){
+      var hs=(sepBins[i]/maxv)*(y1-y0);
+      g.fillStyle=col("--cold"); g.globalAlpha=.75;
+      g.fillRect(x0+i*bw, y1-hs, bw-1, hs);
+    }
+  }
+  g.globalAlpha=1;
+  g.strokeStyle=col("--grid"); g.beginPath(); g.moveTo(x0,y1); g.lineTo(x1,y1); g.stroke();
+  g.fillStyle=col("--faint"); g.font='10px "IBM Plex Mono", monospace';
+  g.fillText("cold",x0+2,y1+13); g.fillText("warm",x1-32,y1+13);
+}
+
+/* ---------- part two controls ---------- */
+function bindPop(id,labId,scale,key,fmtFn){
+  var s=document.getElementById(id), l=document.getElementById(labId);
+  function upd(){
+    POP[key]=(+s.value)/scale;
+    l.textContent=fmtFn?fmtFn(POP[key]):fmt(POP[key]);
+    runPopulation();
+  }
+  s.addEventListener("change",upd);
+  s.addEventListener("input",function(){
+    POP[key]=(+s.value)/scale;
+    l.textContent=fmtFn?fmtFn(POP[key]):fmt(POP[key]);
+  });
+}
+bindPop("sBase","lBase",100,"baseTarget",function(v){return Math.round(v*100)+"%";});
+bindPop("sPeek","lPeek",1,"peek",function(v){return String(Math.round(v));});
+bindPop("sLife","lLife",100,"life");
+bindPop("sSpread","lSpread",100,"spread");
+bindPop("sPNoise","lPNoise",100,"pnoise");
+
+document.getElementById("bRun").addEventListener("click",runPopulation);
+document.getElementById("bTypes").addEventListener("click",function(){
+  POP.types=true; this.classList.add("primary");
+  document.getElementById("bNoTypes").classList.remove("primary");
+  document.getElementById("hTypes").innerHTML=
+    "Right now every couple has its own dials, drawn at random — the usual assumption: outcomes track stable types.";
+  runPopulation();
+});
+document.getElementById("bNoTypes").addEventListener("click",function(){
+  POP.types=false; this.classList.add("primary");
+  document.getElementById("bTypes").classList.remove("primary");
+  document.getElementById("hTypes").innerHTML=
+    "<strong>Every couple is now identical.</strong> No types at all — only different luck. Watch the two pictures above, and the read-out at the bottom.";
+  runPopulation();
+});
+
+runPopulation();
+window.addEventListener("resize",function(){ refreshStatics(); drawPopulation(); });
+
+})();
+</script>
+
+</body>
+</html>
