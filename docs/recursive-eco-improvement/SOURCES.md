@@ -15,9 +15,11 @@ Read-status codes:
 
 **Verification method for every row below: web search returning the publisher/arXiv
 landing page for the exact title.** Direct fetching of arxiv.org, journal sites and
-Wikipedia is blocked by this environment's egress policy (see `00-AGENDA.md` §"Constraint").
-That means: **as of 2026-09-12 no row below is `FULL`.** Fixing that is the first task
-of the next session.
+Wikipedia is blocked by this environment's egress policy (see `00-AGENDA.md` §"Constraint");
+sources reach a `FULL` read only by passing through the Drive corpus.
+
+**`FULL` so far: 1 of 28.** Every other row is `SUMMARY` and must be read before it carries
+any weight in prose.
 
 ---
 
@@ -25,8 +27,8 @@ of the next session.
 
 | Source | Verified identifier | Read |
 |---|---|---|
-| Berg, C., de Lucena, D. & Rosenblatt, J. (2025). *Large Language Models Report Subjective Experience Under Self-Referential Processing.* AE Studio. | arXiv:2510.24797 (v1 27 Oct 2025; v2 exists) | `SUMMARY` |
-| Kaiser, C. & Enderby, S. *No Reliable Evidence of Self-Reported Sentience in Small Large Language Models.* | arXiv:2601.15334 | `SUMMARY` |
+| Berg, C., de Lucena, D. & Rosenblatt, J. (2025). *Large Language Models Report Subjective Experience Under Self-Referential Processing.* AE Studio. | arXiv:2510.24797 (v2 read) | **`FULL`** 2026-09-12 — main body + App. B, C.1–C.4. Note: `notes/2510.24797--berg-2025.md` |
+| Kaiser, C. & Enderby, S. *No Reliable Evidence of Self-Reported Sentience in Small Large Language Models.* | arXiv:2601.15334 (v2) | `SUMMARY` — **PDF in corpus, next to read** |
 | Butlin, P., Long, R., Elmoznino, E., Bengio, Y., Birch, J., Constant, A., Deane, G., Fleming, S. M., Frith, C., Ji, X., Kanai, R., Klein, C., Lindsay, G., Michel, M., Mudrik, L., Peters, M. A. K., Schwitzgebel, E., Simon, J. & VanRullen, R. (2023). *Consciousness in Artificial Intelligence: Insights from the Science of Consciousness.* | arXiv:2308.08708 (v1 17 Aug 2023; v2, v3 exist) | `SUMMARY` |
 | Seth, A. K. (2025). *Conscious artificial intelligence and biological naturalism.* Behavioral and Brain Sciences. | doi:10.1017/S0140525X25000032 | `SUMMARY` |
 | Long, R., Sebo, J., Butlin, P., Finlinson, K., Fish, K., Harding, J., Pfau, J., Sims, T., Birch, J. & Chalmers, D. (2024). *Taking AI Welfare Seriously.* | arXiv:2411.00986 | `SUMMARY` |

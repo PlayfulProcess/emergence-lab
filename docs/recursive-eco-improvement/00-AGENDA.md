@@ -180,13 +180,20 @@ Read `emergence-lab` README and all three ABMs. Verified ~25 citations by search
 three errors in the v0 reading list (above). Discovered the egress constraint and designed
 the working method around it. Wrote Q2, the provisional Q1, Experiment 01, and `SOURCES.md`.
 
-**Blocked:** the anchor paper could not be read. Q1 is provisional and labelled as such.
+**Then unblocked.** Both PDFs reached the Drive corpus and the anchor was read in full.
+`02-Q1` is rewritten and no longer provisional.
+
+**One thing I had wrong, recorded because it is the exact failure this ledger exists to
+prevent:** the provisional Q1 proposed a semantically-matched non-self-referential recursion
+control as "the cheapest real replication", on the assumption the anchor lacked it. It has it —
+the history control matches the iterative feedback structure and returns 0% for six of seven
+models. Guessing at a paper's controls from its abstract produced a confident, wrong
+recommendation. The replacement proposals are in `02-Q1` §"The cheapest real contribution".
 
 **Next session, in order:**
-1. Get the anchor paper inside the perimeter (`corpus/` or Drive), read it in full, and
-   rewrite `02-Q1-*` without the PROVISIONAL banner. Check specifically whether the
-   semantically-matched non-self-referential control already exists in it.
-2. Read Kaiser & Enderby beside it.
-3. Build Experiment 01. Panel C first — the allocation-exponent honesty panel — because if
+1. Read Kaiser & Enderby (arXiv:2601.15334, already in the corpus) and write its note. It is
+   the counterweight and Q1's §"Who disputes it" is `SUMMARY`-level until it is read.
+2. Build Experiment 01. Panel C first — the allocation-exponent honesty panel — because if
    `/ n` is doing the work, Panels A and B need reinterpreting before they are run.
+3. Read down the READ SOON list, one note per paper, ledger updated each time.
 4. Only then: the reading list as a recursive.eco grammar.
