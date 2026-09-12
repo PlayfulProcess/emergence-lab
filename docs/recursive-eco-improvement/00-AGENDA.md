@@ -6,6 +6,10 @@ in — and whether those properties can be specified, measured, and eventually r
 
 Author: PlayfulProcess. Started 2026-09-12.
 
+**New session? Read `../START-HERE.md` first.** The repo went **private** in Sept 2026
+(publish decisions deferred) and a second track — `../positioning/` — now exists alongside
+this one.
+
 ## Files
 
 | File | What it is |
