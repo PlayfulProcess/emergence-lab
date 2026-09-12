@@ -30,15 +30,26 @@ must be brought inside the perimeter first. This is not a nuisance to work aroun
 the reason the architecture below is shaped the way it is, and it makes the corpus durable
 rather than re-fetched every session.
 
-**Three working channels for getting a source in, in order of preference:**
+**The corpus lives in Drive; the library of record lives here.** These are different
+things and conflating them is the mistake to avoid. `emergence-lab` is a **public** repo, so
+no paywalled PDF and no substantial verbatim third-party text may be committed to it —
+the `recursive-books` rule applies unchanged: notes and paraphrase in, raw copyrighted
+text out.
 
-1. **`corpus/` in this repo.** PDFs and extracted text committed here are readable by any
-   future session, forever, with no fetch. Licence-sensitive material stays out (follow the
-   `recursive-books` rule: research notes and paraphrase are committed, raw copyrighted
-   text is not — arXiv preprints under CC-BY are fine to commit; paywalled PDFs are not).
-2. **Google Drive.** The Drive MCP reads file content server-side. Drop a PDF in a known
-   folder and name the folder in the session prompt.
-3. **Paste into chat.** Fine for one paper, bad as a habit.
+| Layer | Where | Contains |
+|---|---|---|
+| **Corpus** (the PDFs) | Google Drive → **`recursive-eco-research-corpus`** (folder id `1mfHuDAHdl7ABodqN_nJbjfQl4siGkaar`) | Source PDFs, private, readable by the Drive MCP server-side. Never leaves Drive. |
+| **Library of record** (what we concluded) | `docs/recursive-eco-improvement/` + `SOURCES.md` | Per-paper notes, the falsifiers, the ledger. Public, paraphrase only, versioned. |
+| **Triage reader** | NotebookLM, sourcing from the Drive folder | Deciding what deserves a full read. Its output is disposable; the conclusion goes in the repo. |
+
+**Naming convention in the Drive folder:** `<arxiv-id-or-doi-slug>--<first-author>-<year>.pdf`
+— e.g. `2510.24797--berg-2025.pdf`. The identifier first, so it matches the `SOURCES.md` row
+without a lookup.
+
+**Per paper, once read, commit one file:** `notes/<same-slug>.md` — the claim, the method,
+what would have to be true for it to be wrong, and how it changes a property in `01-Q2`.
+That file, not the PDF, is what future sessions retrieve. Paraphrase only; quotations under
+~30 words with attribution if the exact wording is argumentatively necessary.
 
 ---
 
