@@ -1,0 +1,453 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Value Landscape</title>
+<meta name="description" content="How a network is grown: a random guess, a score, one small step uphill, repeated. Then many climbers, a flaw in the scoring that is also uphill, and one value everyone can feel from anywhere on the map.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;1,6..72,300&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --paper:#eef1ec; --sheet:#fafcf8; --ink:#1a1f1b; --muted:#5d6a61; --faint:#8a958c;
+    --rule:#cdd6cd; --rule-soft:#dee5dd; --accent:#1f6f5c; --accent-soft:#dcebe4; --debit:#9c3b2e;
+    --stage:#07090b; --cap-ink:#eef3ee; --cap-muted:#aab6ad; --gold:#f2c14e; --flaw:#ff6b57;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#101410; --sheet:#171d18; --ink:#e5ebe3; --muted:#9aa79d; --faint:#6f7d73;
+      --rule:#2b342d; --rule-soft:#222b24; --accent:#5cc6a6; --accent-soft:#16302a; --debit:#d9705d;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#101410; --sheet:#171d18; --ink:#e5ebe3; --muted:#9aa79d; --faint:#6f7d73;
+    --rule:#2b342d; --rule-soft:#222b24; --accent:#5cc6a6; --accent-soft:#16302a; --debit:#d9705d;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,sans-serif;font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 22px 80px}
+  header{padding:48px 0 22px;display:flex;flex-direction:column;gap:10px}
+  .eyebrow{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin:0}
+  .eyebrow a{color:inherit}
+  h1{font-family:Newsreader,Georgia,serif;font-weight:400;font-size:clamp(34px,6vw,54px);line-height:1.05;letter-spacing:-.02em;margin:0}
+  .deck{font-family:Newsreader,Georgia,serif;font-size:19px;font-style:italic;font-weight:300;color:var(--muted);margin:0;max-width:60ch}
+
+  /* The stage: always dark, 16:9, the thing a film embeds. */
+  .stage{position:relative;width:100%;aspect-ratio:16/9;background:var(--stage);border-radius:6px;overflow:hidden;color:var(--cap-ink)}
+  .stage canvas{display:block;width:100%;height:100%;outline:none}
+  .cap{position:absolute;left:0;right:0;bottom:0;padding:clamp(12px,3vw,34px) clamp(14px,3.4vw,40px) clamp(12px,2.6vw,28px);
+       background:linear-gradient(to top,rgba(7,9,11,.92) 30%,rgba(7,9,11,0));pointer-events:none}
+  .cap .meta{font-family:"IBM Plex Mono",monospace;font-size:clamp(9px,1.1vw,12px);letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+  .cap h2{font-family:Newsreader,Georgia,serif;font-weight:400;font-size:clamp(18px,3vw,36px);line-height:1.1;margin:.15em 0 .25em}
+  .cap p{margin:0;max-width:62ch;color:var(--cap-muted);font-size:clamp(12px,1.55vw,18px);line-height:1.45}
+  .nav{position:absolute;top:clamp(8px,1.6vw,16px);right:clamp(8px,1.6vw,16px);display:flex;gap:6px}
+  .nav button,.stepbtn{font:500 12px "IBM Plex Mono",monospace;letter-spacing:.06em;color:var(--cap-ink);background:rgba(255,255,255,.08);
+       border:1px solid rgba(255,255,255,.18);border-radius:4px;padding:6px 10px;cursor:pointer}
+  .nav button:hover,.stepbtn:hover{background:rgba(255,255,255,.16)}
+  .nav button:focus-visible,.stepbtn:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+  .stepbtn{position:absolute;left:50%;top:clamp(10px,2vw,20px);transform:translateX(-50%);background:rgba(242,193,78,.18);border-color:rgba(242,193,78,.55)}
+
+  .controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px 22px;margin-top:18px;padding:16px 18px;background:var(--sheet);border:1px solid var(--rule);border-radius:6px}
+  .controls label{display:flex;flex-direction:column;gap:4px;font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.06em;color:var(--muted)}
+  .controls label span.v{color:var(--ink)}
+  .controls input[type=range]{width:100%;accent-color:var(--accent)}
+  .controls .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .controls button{font:500 12px "IBM Plex Mono",monospace;padding:6px 10px;border-radius:4px;border:1px solid var(--rule);background:var(--paper);color:var(--ink);cursor:pointer}
+  .controls button:hover{background:var(--accent-soft)}
+  .notes{margin-top:34px;display:grid;gap:22px;max-width:70ch}
+  .notes h3{font-family:Newsreader,Georgia,serif;font-weight:400;font-size:24px;margin:0 0 6px}
+  .notes p,.notes li{color:var(--muted);margin:0 0 8px}
+  .notes code{font-family:"IBM Plex Mono",monospace;font-size:13px;background:var(--rule-soft);padding:1px 5px;border-radius:3px;color:var(--ink)}
+  .rule{font-family:Newsreader,Georgia,serif;font-size:19px;font-style:italic;border-left:2px solid var(--accent);padding-left:18px}
+  footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--rule);font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--faint);display:flex;flex-wrap:wrap;gap:8px 20px}
+  footer a{color:var(--accent)}
+
+  /* Embed mode (?embed=1): only the stage, filling the frame. */
+  body.embed{background:var(--stage)}
+  body.embed .wrap{max-width:none;padding:0}
+  body.embed header,body.embed .controls,body.embed .notes,body.embed footer{display:none}
+  body.embed .stage{position:fixed;inset:0;aspect-ratio:auto;border-radius:0}
+  body.nocaptions .cap{display:none}
+  body.nonav .nav,body.nonav .stepbtn{display:none}
+  .fallback{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:24px;color:var(--cap-muted)}
+</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <p class="eyebrow"><a href="../index.html">Emergence Lab</a> · model 04</p>
+  <h1>The Value Landscape</h1>
+  <p class="deck">How a network is grown, not written: a random guess, a score, one small step uphill, again and again. Then many climbers at once, a flaw in the scoring that is also uphill, and one value everyone can feel from anywhere on the map.</p>
+</header>
+
+<div class="stage" id="stage">
+  <div class="fallback" id="fallback">This model needs WebGL. Try another browser, or read the notes below.</div>
+  <button class="stepbtn" id="stepbtn" hidden>Take one step</button>
+  <div class="nav" id="nav">
+    <button id="prev" aria-label="Previous beat">←</button>
+    <button id="play" aria-label="Pause or play">❚❚</button>
+    <button id="next" aria-label="Next beat">→</button>
+  </div>
+  <div class="cap" aria-live="polite">
+    <div class="meta" id="capMeta">1 / 9</div>
+    <h2 id="capTitle"></h2>
+    <p id="capText"></p>
+  </div>
+</div>
+
+<div class="controls" id="controls">
+  <label>climbers <span class="v" id="nV"></span><input id="n" type="range" min="1" max="400" step="1"></label>
+  <label>step size <span class="v" id="lrV"></span><input id="lr" type="range" min="0.002" max="0.05" step="0.001"></label>
+  <label>wandering (noise) <span class="v" id="noiseV"></span><input id="noise" type="range" min="0" max="0.04" step="0.001"></label>
+  <label>shared value <span class="v" id="sharedV"></span><input id="shared" type="range" min="0" max="1" step="0.01"></label>
+  <label>flaw in the scoring <span class="v" id="spikeV"></span><input id="spike" type="range" min="0" max="1" step="0.01"></label>
+  <div class="row"><button id="reseed">Scatter climbers</button><button id="replay">Start the story again</button></div>
+</div>
+
+<section class="notes">
+  <div>
+    <h3>What you are looking at</h3>
+    <p>The height of the ground is a <strong>value function</strong>: how well a behaviour scores. Each glowing dot is a <strong>climber</strong>, a set of parameters. Every iteration it feels which way is up (the <em>gradient</em>) and moves a small step that way, with a little random wandering. That loop, guess, score, adjust, repeat, is the shape of how neural networks are trained.</p>
+    <p>The thin red spire is a <strong>flaw in the scoring</strong>: a spot the grader rewards that nobody meant to reward. It is high ground too, so some climbers end up there. Researchers call this <em>reward hacking</em>. The broad golden hill is a <strong>shared value</strong>, one that can be felt from anywhere on the map.</p>
+  </div>
+  <div>
+    <h3>What this model is not</h3>
+    <ul>
+      <li><strong>Two dimensions, not billions.</strong> A real network has millions or billions of parameters. Researchers draw its landscape as a two-dimensional slice through that space along two chosen directions (Li et al., <a href="https://arxiv.org/abs/1712.09913">Visualizing the Loss Landscape of Neural Nets</a>, NeurIPS 2018). The hills here are invented; the walk is the real algorithm.</li>
+      <li><strong>Uphill instead of downhill.</strong> Training usually minimises a <em>loss</em>, walking downhill. Here it is drawn as maximising a reward, walking uphill. It is the same walk turned over.</li>
+      <li><strong>The climbers are parameters, not people.</strong> The last beats borrow the picture to ask a human question. The metaphor stops there: people are not gradients, and a shared value among humans is not something anyone can install.</li>
+      <li><strong>Escaping a hill takes wandering.</strong> In beat 7 the climbers leave their own hills only because the noise is briefly raised. Without it, most stay where they are. That failure is part of the result.</li>
+    </ul>
+  </div>
+  <div>
+    <h3>Use it in a film</h3>
+    <p>Add <code>?embed=1</code> for the stage only. <code>&amp;beat=5</code> starts at a beat. <code>&amp;autoplay=1</code> moves through the beats on a timer. <code>&amp;captions=0</code> hides the captions when a narrator speaks over it. <code>&amp;nav=0</code> hides the buttons. The page tells its host what it is doing with <code>postMessage</code>: <code>{source:'emergence-lab', model:'value-landscape', type:'beat', beat, total}</code> on each beat and <code>{type:'done'}</code> at the end. A host can send <code>{type:'goto', beat}</code>, <code>{type:'play'}</code> or <code>{type:'pause'}</code>.</p>
+  </div>
+  <p class="rule">A model that cannot lose proves nothing. This one is an illustration of an algorithm, not evidence about any system.</p>
+</section>
+
+<footer>
+  <span><a href="../index.html">Emergence Lab</a></span>
+  <span><a href="https://github.com/PlayfulProcess/emergence-lab">source</a></span>
+  <span>CC BY-SA 4.0 · PlayfulProcess</span>
+</footer>
+</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+// ---------- URL options ----------
+const q = new URLSearchParams(location.search);
+const EMBED = q.get('embed') === '1';
+const AUTOPLAY = q.get('autoplay') === '1';
+if (EMBED) document.body.classList.add('embed');
+if (q.get('captions') === '0') document.body.classList.add('nocaptions');
+if (q.get('nav') === '0') document.body.classList.add('nonav');
+const REDUCE = !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+
+// ---------- Seeded randomness, so every beat replays the same ----------
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+let rand = mulberry32(7);
+function randn(){let u=0,v=0;while(u===0)u=rand();while(v===0)v=rand();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+
+// ---------- The value function V(x, y) on the square [-1, 1]² ----------
+const PRIVATE = [
+  {x:-0.55,y:-0.45,a:0.55,s:0.16},{x:0.50,y:0.52,a:0.62,s:0.18},{x:-0.60,y:0.55,a:0.48,s:0.14},
+  {x:0.15,y:-0.72,a:0.42,s:0.13},{x:0.72,y:-0.05,a:0.50,s:0.15},{x:-0.18,y:0.22,a:0.30,s:0.10}
+];
+const SHARED = {x:0.02,y:-0.02,s:0.34,a:1.05};
+const FLAW = {x:0.60,y:-0.62,s:0.035,a:1.35, skirtS:0.12, skirtA:0.25};
+const P = { n:240, lr:0.012, noise:0.004, shared:0, spike:0 };
+let noiseBoost = 0;               // extra wandering, decays (beat 7)
+
+function gauss(x,y,px,py,s){const dx=x-px,dy=y-py;return Math.exp(-(dx*dx+dy*dy)/(2*s*s))}
+function V(x,y){
+  let v = -0.25*(x*x+y*y) + 0.05*Math.sin(3.1*x+0.4)*Math.cos(2.3*y-0.2);
+  for (const p of PRIVATE) v += p.a*gauss(x,y,p.x,p.y,p.s);
+  v += P.shared*SHARED.a*gauss(x,y,SHARED.x,SHARED.y,SHARED.s);
+  v += P.spike*(FLAW.a*gauss(x,y,FLAW.x,FLAW.y,FLAW.s) + FLAW.skirtA*gauss(x,y,FLAW.x,FLAW.y,FLAW.skirtS));
+  return v;
+}
+function gradV(x,y){
+  let gx = -0.5*x + 0.05*3.1*Math.cos(3.1*x+0.4)*Math.cos(2.3*y-0.2);
+  let gy = -0.5*y - 0.05*2.3*Math.sin(3.1*x+0.4)*Math.sin(2.3*y-0.2);
+  const add=(a,px,py,s)=>{const g=a*gauss(x,y,px,py,s);gx+=g*(-(x-px)/(s*s));gy+=g*(-(y-py)/(s*s))};
+  for (const p of PRIVATE) add(p.a,p.x,p.y,p.s);
+  if (P.shared>0) add(P.shared*SHARED.a,SHARED.x,SHARED.y,SHARED.s);
+  if (P.spike>0){add(P.spike*FLAW.a,FLAW.x,FLAW.y,FLAW.s);add(P.spike*FLAW.skirtA,FLAW.x,FLAW.y,FLAW.skirtS)}
+  return [gx,gy];
+}
+function flawShare(x,y){const f=P.spike*(FLAW.a*gauss(x,y,FLAW.x,FLAW.y,FLAW.s));return f}
+
+// ---------- Scene ----------
+const stage = document.getElementById('stage');
+let renderer;
+try { renderer = new THREE.WebGLRenderer({antialias:true, preserveDrawingBuffer:false}); }
+catch(e){ document.getElementById('fallback').style.display='flex'; throw e; }
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setClearColor(0x07090b,1);
+stage.prepend(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.Fog(0x07090b, 14, 34);
+const camera = new THREE.PerspectiveCamera(40, 16/9, 0.1, 100);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.target.set(0,0.8,0); controls.maxPolarAngle = Math.PI*0.49;
+controls.minDistance = 4; controls.maxDistance = 30;
+scene.add(new THREE.HemisphereLight(0xcfe9dd, 0x0a0f0c, 0.9));
+const sun = new THREE.DirectionalLight(0xfff1d6, 1.4); sun.position.set(6,10,4); scene.add(sun);
+
+const W = 5, H = 2.2, SEG = 150;           // domain [-1,1] maps to [-W,W]; height scale H
+const geo = new THREE.PlaneGeometry(2*W, 2*W, SEG, SEG); geo.rotateX(-Math.PI/2);
+const pos = geo.attributes.position;
+const colors = new Float32Array(pos.count*3); geo.setAttribute('color', new THREE.BufferAttribute(colors,3));
+const terrain = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({vertexColors:true, roughness:0.85, metalness:0.0}));
+scene.add(terrain);
+const wire = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({color:0x9fd6c2, wireframe:true, transparent:true, opacity:0.05}));
+scene.add(wire);
+
+// Gold is reserved for the shared value; the highest private hill tops out pale, not gold.
+const C_LOW = new THREE.Color('#0d2622'), C_MID = new THREE.Color('#1f6f5c'), C_HIGH = new THREE.Color('#bfe0b5'), C_TOP = new THREE.Color('#eef2dc'), C_FLAW = new THREE.Color('#ff6b57'), C_SHARED = new THREE.Color('#f2c14e');
+const tmp = new THREE.Color();
+function rebuildTerrain(){
+  let vmin=Infinity, vmax=-Infinity; const vs = new Float32Array(pos.count);
+  for (let i=0;i<pos.count;i++){ const v=V(pos.getX(i)/W, pos.getZ(i)/W); vs[i]=v; if(v<vmin)vmin=v; if(v>vmax)vmax=v; }
+  for (let i=0;i<pos.count;i++){
+    pos.setY(i, vs[i]*H);
+    const t = (vs[i]-vmin)/Math.max(1e-6,vmax-vmin);
+    if (t<0.45) tmp.copy(C_LOW).lerp(C_MID, t/0.45);
+    else if (t<0.8) tmp.copy(C_MID).lerp(C_HIGH, (t-0.45)/0.35);
+    else tmp.copy(C_HIGH).lerp(C_TOP, (t-0.8)/0.2);
+    const dx = pos.getX(i)/W, dz = pos.getZ(i)/W;
+    const sh = P.shared*SHARED.a*gauss(dx,dz,SHARED.x,SHARED.y,SHARED.s);
+    // Gold only near the summit of the shared hill, not across its whole skirt.
+    const summit = Math.max(0, Math.min(1, (t-0.62)/0.3));
+    if (sh>0.05 && vs[i]>0 && summit>0) tmp.lerp(C_SHARED, Math.min(0.8, sh/Math.max(0.35,vs[i])) * P.shared * summit);
+    const f = flawShare(dx, dz);
+    if (f>0.05 && vs[i]>0) tmp.lerp(C_FLAW, Math.min(1, f/Math.max(0.2,vs[i])));
+    colors[i*3]=tmp.r; colors[i*3+1]=tmp.g; colors[i*3+2]=tmp.b;
+  }
+  pos.needsUpdate = true; geo.attributes.color.needsUpdate = true; geo.computeVertexNormals();
+}
+
+// The shared value's ring: a glow held at the top of the golden hill.
+const ring = new THREE.Mesh(new THREE.RingGeometry(0.95,1.12,72), new THREE.MeshBasicMaterial({color:0xf2c14e, transparent:true, opacity:0, side:THREE.DoubleSide, depthWrite:false}));
+ring.rotation.x = -Math.PI/2; scene.add(ring);
+
+// ---------- Climbers ----------
+const MAXN = 400;
+const px = new Float32Array(MAXN), py = new Float32Array(MAXN);
+let n = 0;
+const dots = new THREE.InstancedMesh(new THREE.SphereGeometry(0.075,12,10), new THREE.MeshBasicMaterial({color:0xffffff}), MAXN);
+dots.instanceMatrix.setUsage(THREE.DynamicDrawUsage); dots.count = 0; scene.add(dots);
+const C_DOT = new THREE.Color('#e9f3ec'), C_GOLD = new THREE.Color('#ffd166'), C_RED = new THREE.Color('#ff7a66');
+const m4 = new THREE.Matrix4();
+for (let i=0;i<MAXN;i++) dots.setColorAt(i, C_DOT);
+
+const TRAIL = 90; let focus = 0;
+const trails = [];
+for (let k=0;k<12;k++){
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(TRAIL*3),3)); g.setDrawRange(0,0);
+  const line = new THREE.Line(g, new THREE.LineBasicMaterial({color:0xffe6a8, transparent:true, opacity:0.55}));
+  scene.add(line); trails.push({line, pts:[]});
+}
+function clearTrails(){ for (const t of trails){ t.pts.length=0; t.line.geometry.setDrawRange(0,0);} }
+
+function scatter(count, seed){
+  rand = mulberry32(seed); n = count;
+  for (let i=0;i<n;i++){ px[i]=rand()*1.9-0.95; py[i]=rand()*1.9-0.95; }
+  clearTrails();
+}
+function place(x,y){ n=1; px[0]=x; py[0]=y; clearTrails(); }
+
+let lastStep = null;       // for the arrow: [x0,y0,x1,y1]
+function iterate(){
+  const noise = P.noise + noiseBoost;
+  for (let i=0;i<n;i++){
+    const [gx,gy] = gradV(px[i],py[i]);
+    let sx = P.lr*gx, sy = P.lr*gy; const L = Math.hypot(sx,sy);
+    if (L>0.035){ sx*=0.035/L; sy*=0.035/L; }
+    const x0=px[i], y0=py[i];
+    px[i] = Math.max(-0.98, Math.min(0.98, px[i]+sx+noise*randn()));
+    py[i] = Math.max(-0.98, Math.min(0.98, py[i]+sy+noise*randn()));
+    if (i===0) lastStep = [x0,y0,px[i],py[i]];
+  }
+}
+
+function drawClimbers(){
+  dots.count = n;
+  for (let i=0;i<n;i++){
+    const h = V(px[i],py[i])*H + 0.07;
+    m4.makeTranslation(px[i]*W, h, py[i]*W); dots.setMatrixAt(i, m4);
+    const dS = Math.hypot(px[i]-SHARED.x, py[i]-SHARED.y), dF = Math.hypot(px[i]-FLAW.x, py[i]-FLAW.y);
+    dots.setColorAt(i, (P.spike>0.5 && dF<0.07) ? C_RED : (P.shared>0.3 && dS<0.22) ? C_GOLD : C_DOT);
+  }
+  dots.instanceMatrix.needsUpdate = true; if (dots.instanceColor) dots.instanceColor.needsUpdate = true;
+  for (let k=0;k<trails.length;k++){
+    const t = trails[k];
+    if (k>=Math.min(focus,n)){ t.line.visible=false; continue; }
+    t.line.visible = true;
+    t.pts.push(px[k]*W, V(px[k],py[k])*H+0.05, py[k]*W);
+    if (t.pts.length > TRAIL*3) t.pts.splice(0,3);
+    const arr = t.line.geometry.attributes.position.array; arr.set(t.pts);
+    t.line.geometry.attributes.position.needsUpdate = true; t.line.geometry.setDrawRange(0, t.pts.length/3);
+  }
+}
+
+// The gradient arrow for "one step".
+const arrow = new THREE.ArrowHelper(new THREE.Vector3(1,0,0), new THREE.Vector3(), 1, 0xffd166, 0.28, 0.16);
+arrow.visible = false; scene.add(arrow);
+function aimArrow(){
+  if (n<1) return;
+  const [gx,gy] = gradV(px[0],py[0]); const L = Math.hypot(gx,gy)||1;
+  const x0=px[0], y0=py[0], x1=x0+0.12*gx/L, y1=y0+0.12*gy/L;
+  const a = new THREE.Vector3(x0*W, V(x0,y0)*H+0.12, y0*W), b = new THREE.Vector3(x1*W, V(x1,y1)*H+0.12, y1*W);
+  const d = b.clone().sub(a); arrow.position.copy(a); arrow.setDirection(d.clone().normalize()); arrow.setLength(Math.max(0.9,d.length()*1.6),0.3,0.18);
+}
+
+// ---------- Camera presets ----------
+const CAMS = { overview:[9.5,7.2,9.5], close:[5.2,4.6,6.8], far:[14,11.5,15] };
+let camTo = null;
+function moveCamera(name, instant){
+  const p = CAMS[name]; const to = new THREE.Vector3(p[0],p[1],p[2]);
+  if (instant || REDUCE){ camera.position.copy(to); camTo=null; } else camTo = to;
+}
+
+// ---------- The beats ----------
+const BEATS = [
+  { t:'A landscape of value', x:'Height is how well a behaviour scores. The rule that decides the height is the value function: a reward, a grade, a loss turned upside down.', sec:9 },
+  { t:'One guess', x:'A new network starts as a random guess. It has no idea where the high ground is.', sec:6 },
+  { t:'One step', x:'It tries something, gets scored, and feels which way is up: the gradient. Then it moves one small step that way. That is one iteration.', sec:9 },
+  { t:'Rinse, wash, repeat', x:'Repeat it many times and the guess climbs. It stops on top of the nearest hill, which is not always the highest one.', sec:9 },
+  { t:'Many at once', x:'Start many climbers and they settle on different hills. Nobody wrote their destinations down. The landscape did.', sec:10 },
+  { t:'A flaw is also uphill', x:'If the scoring has a flaw, the flaw is high ground too. Some climbers find the shortcut the grader rewards. Researchers call it reward hacking.', sec:10 },
+  { t:'A shared value', x:'Now raise one value that can be felt from anywhere on the map. Given a little freedom to wander, the many begin to move as one.', sec:13 },
+  { t:'An honest caveat', x:'Real models climb in billions of dimensions; this is a two-dimensional slice, drawn the way researchers draw them. The hills are invented. The walk is the real algorithm.', sec:11 },
+  { t:'Which hill?', x:'The machines already have a landscape to climb. What value would we want to climb together, one next small step at a time?', sec:10 }
+];
+let beat = 0, playing = !REDUCE, beatClock = 0, target = {shared:0, spike:0}, oneStepAt = -1, freePlay = false, speed = 1;
+
+function post(msg){ if (window.parent !== window) window.parent.postMessage(Object.assign({source:'emergence-lab', model:'value-landscape'}, msg), '*'); }
+
+function enterBeat(i, jumped){
+  beat = Math.max(0, Math.min(BEATS.length-1, i)); beatClock = 0; freePlay = false; noiseBoost = 0; oneStepAt = -1;
+  const b = BEATS[beat];
+  document.getElementById('capMeta').textContent = (beat+1)+' / '+BEATS.length;
+  document.getElementById('capTitle').textContent = b.t;
+  document.getElementById('capText').textContent = b.x;
+  document.getElementById('stepbtn').hidden = beat!==2;
+  arrow.visible = beat===2;
+  controls.autoRotate = beat===8 && !REDUCE; controls.autoRotateSpeed = 0.6;
+  P.lr = 0.012; P.noise = 0.004;
+  target.shared = beat>=6 ? 1 : 0; target.spike = beat>=5 ? 1 : 0;
+  // Jumping in from elsewhere: set the ground at once; stepping forward: let it grow.
+  const forward = !jumped;
+  if (!forward || beat<5){ P.shared = target.shared; P.spike = target.spike; }
+  if (beat===5 && forward) P.spike = Math.min(P.spike, 0.02);
+  if (beat===6 && forward) P.shared = Math.min(P.shared, 0.02);
+  rebuildTerrain();
+
+  if (beat===0){ n=0; focus=0; clearTrails(); moveCamera('overview', jumped); speed=1; }
+  if (beat>=1 && beat<=3){
+    if (beat===1 || n!==1 || jumped){ place(0.27,0.18); }
+    focus = 1; speed = 0.45; moveCamera('close', jumped);
+    if (beat===2){ aimArrow(); oneStepAt = 1.6; }
+  }
+  if (beat>=4){
+    if (beat===4 || n<200 || jumped){ scatter(240, 11); if (beat>=5 || jumped) prewarm(beat===4 ? 0 : 260); }
+    focus = 10; speed = 1; moveCamera(beat===7 ? 'far' : 'overview', jumped);
+    if (beat===6) noiseBoost = 0.028;
+  }
+  if (REDUCE){ prewarm(beat===2 ? 0 : 320); if (beat===6){ P.shared=1; rebuildTerrain(); noiseBoost=0.028; prewarm(120); noiseBoost=0; prewarm(200);} }
+  drawClimbers(); syncInputs();
+  post({type:'beat', beat:beat+1, total:BEATS.length});
+}
+function prewarm(k){ for (let j=0;j<k;j++) iterate(); }
+
+function takeOneStep(){ iterate(); drawClimbers(); aimArrow(); }
+
+// ---------- Controls ----------
+const $ = id => document.getElementById(id);
+function syncInputs(){
+  $('n').value = n||P.n; $('nV').textContent = n;
+  $('lr').value = P.lr; $('lrV').textContent = P.lr.toFixed(3);
+  $('noise').value = P.noise; $('noiseV').textContent = P.noise.toFixed(3);
+  $('shared').value = P.shared; $('sharedV').textContent = P.shared.toFixed(2);
+  $('spike').value = P.spike; $('spikeV').textContent = P.spike.toFixed(2);
+}
+function toFree(){ freePlay = true; target.shared = P.shared; target.spike = P.spike; noiseBoost = 0; arrow.visible=false; $('stepbtn').hidden = true;
+  $('capMeta').textContent = 'free play'; $('capTitle').textContent = 'Your landscape'; $('capText').textContent = 'Move the sliders. Scatter the climbers. Try to make them all agree without raising the shared value.'; if(!playing) togglePlay(); }
+$('n').addEventListener('input', e=>{ toFree(); scatter(+e.target.value, 11); focus = Math.min(10,n); speed=1; syncInputs(); });
+$('lr').addEventListener('input', e=>{ toFree(); P.lr = +e.target.value; syncInputs(); });
+$('noise').addEventListener('input', e=>{ toFree(); P.noise = +e.target.value; syncInputs(); });
+$('shared').addEventListener('input', e=>{ toFree(); P.shared = target.shared = +e.target.value; rebuildTerrain(); syncInputs(); });
+$('spike').addEventListener('input', e=>{ toFree(); P.spike = target.spike = +e.target.value; rebuildTerrain(); syncInputs(); });
+$('reseed').addEventListener('click', ()=>{ toFree(); scatter(Math.max(1,n||P.n), Math.floor(Math.random()*1e6)); focus=Math.min(10,n); speed=1; syncInputs(); });
+$('replay').addEventListener('click', ()=>{ enterBeat(0, true); if(!playing) togglePlay(); });
+$('prev').addEventListener('click', ()=> enterBeat(beat-1, true));
+$('next').addEventListener('click', ()=> enterBeat(beat+1, false));
+$('play').addEventListener('click', togglePlay);
+$('stepbtn').addEventListener('click', ()=>{ oneStepAt=-1; takeOneStep(); });
+function togglePlay(){ playing = !playing; $('play').textContent = playing ? '❚❚' : '▶'; post({type: playing ? 'play' : 'pause'}); }
+$('play').textContent = playing ? '❚❚' : '▶';
+addEventListener('keydown', e=>{
+  if (e.target.closest && e.target.closest('input')) return;
+  if (e.key==='ArrowRight') enterBeat(beat+1,false);
+  else if (e.key==='ArrowLeft') enterBeat(beat-1,true);
+  else if (e.key===' '){ e.preventDefault(); togglePlay(); }
+});
+addEventListener('message', e=>{
+  const d = e.data; if (!d || typeof d!=='object') return;
+  if (d.type==='goto' && Number.isFinite(d.beat)) enterBeat(d.beat-1, true);
+  else if (d.type==='play' && !playing) togglePlay();
+  else if (d.type==='pause' && playing) togglePlay();
+});
+
+// ---------- Size ----------
+function resize(){
+  const r = stage.getBoundingClientRect(); const w = Math.max(1,r.width), h = Math.max(1,r.height);
+  renderer.setSize(w,h,false); camera.aspect = w/h; camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(stage); resize();
+
+// ---------- Loop ----------
+let last = performance.now(), acc = 0, doneSent = false;
+function frame(now){
+  const dt = Math.min(0.05, (now-last)/1000); last = now;
+  if (camTo){ camera.position.lerp(camTo, 1-Math.pow(0.001, dt)); if (camera.position.distanceTo(camTo)<0.02) camTo=null; }
+  if (playing){
+    beatClock += dt;
+    // Grow the ground toward this beat's targets (flaw first, then the shared value).
+    let changed = false;
+    for (const k of ['spike','shared']){ if (Math.abs(P[k]-target[k])>1e-3){ P[k] += Math.sign(target[k]-P[k])*Math.min(Math.abs(target[k]-P[k]), dt/4); changed = true; } }
+    if (changed){ rebuildTerrain(); syncInputs(); }
+    if (noiseBoost>0 && beatClock>4.5) noiseBoost = Math.max(0, noiseBoost - dt*0.012);
+    if (oneStepAt>0 && beatClock>=oneStepAt){ oneStepAt=-1; takeOneStep(); }
+    if (beat!==2 || freePlay){ acc += dt*60*speed; while (acc>=1){ iterate(); acc-=1; } }
+    if (n) drawClimbers();
+    if (AUTOPLAY && !freePlay && beatClock >= BEATS[beat].sec){
+      if (beat < BEATS.length-1) enterBeat(beat+1, false);
+      else if (!doneSent){ doneSent = true; post({type:'done'}); }
+    }
+  }
+  const top = V(SHARED.x,SHARED.y)*H;
+  ring.position.set(SHARED.x*W, top+0.06, SHARED.y*W);
+  ring.material.opacity = P.shared*(0.45+0.25*Math.sin(now/600));
+  controls.update();
+  renderer.render(scene, camera);
+  requestAnimationFrame(frame);
+}
+
+const startBeat = Math.max(1, Math.min(BEATS.length, parseInt(q.get('beat')||'1',10)||1));
+enterBeat(startBeat-1, startBeat>1);
+if (startBeat===1) moveCamera('overview', true);
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
