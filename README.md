@@ -18,6 +18,8 @@ Both lines share a method: **start from a small reproducible simulation, underst
 | [`model_a_insurance_test.py`](model_a_insurance_test.py) | Fixed-strategy "plots" tracked over a fluctuating environment, no group selection | Yachi & Loreau's insurance hypothesis (diversity reduces variance without cutting mean) — direct analogue of Tilman's Cedar Creek experiments |
 | [`cultural_resilience_abm.jsx`](cultural_resilience_abm.jsx) | React/Recharts dashboard | Visualizes the above three scenarios (Monoculture / Pure Diversity / Protocol + Diversity) |
 
+**Successor (Sep 2026):** the shared-pool line continues in `value-lab` (private repo, same author) — a rewrite of the commons model with pre-registered runs, 20 seeds per condition, results kept outside the repo, and its own honest record of nulls (`self-criticism.md`, `calibration-finding.md`). Its rule-based agents are the engine the parked Model 05 ("a smarter extractor and a collapse are the same curve") would run on.
+
 **Early finding across these:** pure diversity buys resilience but costs mean output; a *thin protocol* (minimum cooperation, maximum extraction) layered on top of diversity recovers most of the output while keeping the insurance benefit. This is the throughline into the mind-modeling work below — both are about what structure (biological, cultural, perceptual) survives selection pressure.
 
 ---
